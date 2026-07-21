@@ -11,8 +11,8 @@ useHead({
   }
 })
 
-const title = 'ThamallCoupon'
-const description = 'โปรเจกต์ Nuxt ที่พร้อมใช้ Nuxt UI components'
+const title = 'Create Coupon Package'
+const description = 'Admin console for creating coupon packages'
 
 useSeoMeta({
   title,
@@ -25,38 +25,6 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <UHeader>
-      <template #left>
-        <NuxtLink to="/" class="flex items-center gap-2 font-semibold text-highlighted">
-          <UIcon name="i-lucide-ticket" class="size-5 text-primary" />
-          ThamallCoupon
-        </NuxtLink>
-      </template>
-
-      <template #right>
-        <UColorModeButton />
-
-        <UButton
-          to="https://ui.nuxt.com/docs/components"
-          target="_blank"
-          label="Nuxt UI Docs"
-          icon="i-lucide-book-open"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
-    </UHeader>
-
-    <UMain>
-      <NuxtPage />
-    </UMain>
-
-    <UFooter>
-      <template #left>
-        <p class="text-sm text-muted">
-          Built with Nuxt UI • © {{ new Date().getFullYear() }} ThamallCoupon
-        </p>
-      </template>
-    </UFooter>
+    <NuxtPage />
   </UApp>
 </template>
