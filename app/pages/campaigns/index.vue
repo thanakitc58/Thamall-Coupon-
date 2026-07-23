@@ -357,387 +357,387 @@ function addCoupon() {
         aria-label="Campaign configuration panels"
       >
         <div class="grid gap-4 lg:grid-cols-2">
-        <!-- 1. Campaign Information -->
-        <article class="min-w-0">
-          <UCard
-            :ui="{
-              root: 'h-full',
-              body: 'space-y-4'
-            }"
-          >
-            <template #header>
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
-                  <span class="flex size-6 items-center justify-center rounded bg-primary text-xs text-white">1</span>
-                  Campaign Information
-                </h3>
-                <UButton
-                  label="Edit"
-                  color="primary"
-                  variant="link"
-                  size="xs"
-                />
-              </div>
-            </template>
-
-            <dl class="space-y-3 text-sm">
-              <div>
-                <dt class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Campaign Name
-                </dt>
-                <dd class="mt-0.5 font-semibold">
-                  {{ campaign.name }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Description
-                </dt>
-                <dd class="mt-0.5 text-toned">
-                  {{ campaign.description }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Period
-                </dt>
-                <dd class="mt-0.5 font-medium">
-                  {{ campaign.startDate }} — {{ campaign.endDate }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Status
-                </dt>
-                <dd class="mt-1">
-                  <UBadge
-                    :label="campaign.status"
-                    color="success"
-                    variant="subtle"
-                  />
-                </dd>
-              </div>
-            </dl>
-
-            <USeparator />
-
-            <div class="space-y-3">
-              <h4 class="text-xs font-bold uppercase tracking-wide text-muted">
-                Campaign Quota
-              </h4>
-              <div class="grid grid-cols-3 gap-2">
-                <div class="rounded-md border border-default bg-muted/40 px-3 py-2">
-                  <p class="text-xs text-muted">
-                    Per Campaign
-                  </p>
-                  <p class="font-semibold tabular-nums">
-                    {{ formatNumber(campaign.quota.perCampaign) }}
-                  </p>
-                </div>
-                <div class="rounded-md border border-default bg-muted/40 px-3 py-2">
-                  <p class="text-xs text-muted">
-                    Per Day
-                  </p>
-                  <p class="font-semibold tabular-nums">
-                    {{ formatNumber(campaign.quota.perDay) }}
-                  </p>
-                </div>
-                <div class="rounded-md border border-default bg-muted/40 px-3 py-2">
-                  <p class="text-xs text-muted">
-                    Per User
-                  </p>
-                  <p class="font-semibold tabular-nums">
-                    {{ formatNumber(campaign.quota.perUser) }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </UCard>
-        </article>
-
-        <!-- 2. Coupon Groups -->
-        <article class="min-w-0">
-          <UCard
-            :ui="{
-              root: 'h-full',
-              body: 'space-y-3'
-            }"
-          >
-            <template #header>
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
-                  <span class="flex size-6 items-center justify-center rounded bg-primary text-xs text-white">2</span>
-                  Coupon Groups
-                </h3>
-                <UButton
-                  label="Add Group"
-                  icon="i-lucide-plus"
-                  color="primary"
-                  variant="link"
-                  size="xs"
-                  @click="addGroup"
-                />
-              </div>
-            </template>
-
-            <button
-              v-for="group in groups"
-              :key="group.id"
-              type="button"
-              class="w-full rounded-lg border px-3 py-3 text-left transition-colors"
-              :class="selectedGroupId === group.id
-                ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                : 'border-default bg-elevated hover:border-accented'"
-              @click="selectGroup(group.id)"
+          <!-- 1. Campaign Information -->
+          <article class="min-w-0">
+            <UCard
+              :ui="{
+                root: 'h-full',
+                body: 'space-y-4'
+              }"
             >
-              <div class="flex items-start justify-between gap-2">
-                <div class="min-w-0">
-                  <p class="font-semibold">
-                    {{ group.name }}
-                  </p>
-                  <p class="mt-0.5 text-xs text-muted">
-                    เลือก {{ group.chooseCount }} จาก {{ group.coupons.length }} คูปอง
-                  </p>
+              <template #header>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
+                    <span class="flex size-6 items-center justify-center rounded bg-primary text-xs text-white">1</span>
+                    Campaign Information
+                  </h3>
+                  <UButton
+                    label="Edit"
+                    color="primary"
+                    variant="link"
+                    size="xs"
+                  />
                 </div>
-                <UBadge
-                  :label="`${group.coupons.length} Coupons`"
-                  color="neutral"
-                  variant="subtle"
-                  size="sm"
-                />
+              </template>
+
+              <dl class="space-y-3 text-sm">
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+                    Campaign Name
+                  </dt>
+                  <dd class="mt-0.5 font-semibold">
+                    {{ campaign.name }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+                    Description
+                  </dt>
+                  <dd class="mt-0.5 text-toned">
+                    {{ campaign.description }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+                    Period
+                  </dt>
+                  <dd class="mt-0.5 font-medium">
+                    {{ campaign.startDate }} — {{ campaign.endDate }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+                    Status
+                  </dt>
+                  <dd class="mt-1">
+                    <UBadge
+                      :label="campaign.status"
+                      color="success"
+                      variant="subtle"
+                    />
+                  </dd>
+                </div>
+              </dl>
+
+              <USeparator />
+
+              <div class="space-y-3">
+                <h4 class="text-xs font-bold uppercase tracking-wide text-muted">
+                  Campaign Quota
+                </h4>
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="rounded-md border border-default bg-muted/40 px-3 py-2">
+                    <p class="text-xs text-muted">
+                      Per Campaign
+                    </p>
+                    <p class="font-semibold tabular-nums">
+                      {{ formatNumber(campaign.quota.perCampaign) }}
+                    </p>
+                  </div>
+                  <div class="rounded-md border border-default bg-muted/40 px-3 py-2">
+                    <p class="text-xs text-muted">
+                      Per Day
+                    </p>
+                    <p class="font-semibold tabular-nums">
+                      {{ formatNumber(campaign.quota.perDay) }}
+                    </p>
+                  </div>
+                  <div class="rounded-md border border-default bg-muted/40 px-3 py-2">
+                    <p class="text-xs text-muted">
+                      Per User
+                    </p>
+                    <p class="font-semibold tabular-nums">
+                      {{ formatNumber(campaign.quota.perUser) }}
+                    </p>
+                  </div>
+                </div>
               </div>
-            </button>
-          </UCard>
-        </article>
+            </UCard>
+          </article>
+
+          <!-- 2. Coupon Groups -->
+          <article class="min-w-0">
+            <UCard
+              :ui="{
+                root: 'h-full',
+                body: 'space-y-3'
+              }"
+            >
+              <template #header>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
+                    <span class="flex size-6 items-center justify-center rounded bg-primary text-xs text-white">2</span>
+                    Coupon Groups
+                  </h3>
+                  <UButton
+                    label="Add Group"
+                    icon="i-lucide-plus"
+                    color="primary"
+                    variant="link"
+                    size="xs"
+                    @click="addGroup"
+                  />
+                </div>
+              </template>
+
+              <button
+                v-for="group in groups"
+                :key="group.id"
+                type="button"
+                class="w-full rounded-lg border px-3 py-3 text-left transition-colors"
+                :class="selectedGroupId === group.id
+                  ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                  : 'border-default bg-elevated hover:border-accented'"
+                @click="selectGroup(group.id)"
+              >
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0">
+                    <p class="font-semibold">
+                      {{ group.name }}
+                    </p>
+                    <p class="mt-0.5 text-xs text-muted">
+                      เลือก {{ group.chooseCount }} จาก {{ group.coupons.length }} คูปอง
+                    </p>
+                  </div>
+                  <UBadge
+                    :label="`${group.coupons.length} Coupons`"
+                    color="neutral"
+                    variant="subtle"
+                    size="sm"
+                  />
+                </div>
+              </button>
+            </UCard>
+          </article>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-2">
-        <!-- 3. Group Detail -->
-        <article class="min-w-0">
-          <UCard
-            v-if="selectedGroup"
-            :ui="{
-              root: 'h-full',
-              body: 'space-y-5'
-            }"
-          >
-            <template #header>
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="flex min-w-0 items-center gap-2 text-sm font-bold text-primary">
-                  <span class="flex size-6 shrink-0 items-center justify-center rounded bg-primary text-xs text-white">3</span>
-                  <span class="truncate">Group Detail : {{ selectedGroup.name }}</span>
-                </h3>
-                <UButton
-                  label="Edit"
-                  color="primary"
-                  variant="link"
-                  size="xs"
-                />
-              </div>
-            </template>
-
-            <dl class="space-y-3 text-sm">
-              <div>
-                <dt class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Group Name
-                </dt>
-                <dd class="mt-0.5 font-semibold">
-                  {{ selectedGroup.name }}
-                </dd>
-              </div>
-              <div>
-                <dt class="text-xs font-medium uppercase tracking-wide text-muted">
-                  Description
-                </dt>
-                <dd class="mt-0.5 text-toned">
-                  {{ selectedGroup.description }}
-                </dd>
-              </div>
-            </dl>
-
-            <div class="space-y-3 rounded-lg border border-default bg-muted/30 p-3">
-              <h4 class="text-xs font-bold uppercase tracking-wide text-muted">
-                Selection Rule
-              </h4>
-              <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
-                <span>Choose</span>
-                <UInput
-                  v-model.number="selectedGroup.chooseCount"
-                  type="number"
-                  :min="1"
-                  :max="selectedGroup.coupons.length"
-                  class="w-16"
-                  size="sm"
-                />
-                <span>Coupons from</span>
-                <UInput
-                  :model-value="selectedGroup.coupons.length"
-                  type="number"
-                  disabled
-                  class="w-16"
-                  size="sm"
-                />
-                <span>Coupons</span>
-              </div>
-              <p class="text-xs text-muted">
-                ผู้ใช้เลือกได้ {{ selectedGroup.chooseCount }} จาก {{ selectedGroup.coupons.length }} คูปองในกลุ่มนี้
-              </p>
-            </div>
-
-            <div class="space-y-3">
-              <div class="flex items-center justify-between gap-3">
-                <h4 class="text-xs font-bold uppercase tracking-wide text-muted">
-                  Group Quota
-                </h4>
-                <div class="flex items-center gap-2">
-                  <span class="text-xs text-muted">Inherit Campaign Quota</span>
-                  <USwitch
-                    :model-value="selectedGroup.inheritCampaignQuota"
-                    @update:model-value="onGroupInheritChange"
+          <!-- 3. Group Detail -->
+          <article class="min-w-0">
+            <UCard
+              v-if="selectedGroup"
+              :ui="{
+                root: 'h-full',
+                body: 'space-y-5'
+              }"
+            >
+              <template #header>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="flex min-w-0 items-center gap-2 text-sm font-bold text-primary">
+                    <span class="flex size-6 shrink-0 items-center justify-center rounded bg-primary text-xs text-white">3</span>
+                    <span class="truncate">Group Detail : {{ selectedGroup.name }}</span>
+                  </h3>
+                  <UButton
+                    label="Edit"
+                    color="primary"
+                    variant="link"
+                    size="xs"
                   />
                 </div>
+              </template>
+
+              <dl class="space-y-3 text-sm">
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+                    Group Name
+                  </dt>
+                  <dd class="mt-0.5 font-semibold">
+                    {{ selectedGroup.name }}
+                  </dd>
+                </div>
+                <div>
+                  <dt class="text-xs font-medium uppercase tracking-wide text-muted">
+                    Description
+                  </dt>
+                  <dd class="mt-0.5 text-toned">
+                    {{ selectedGroup.description }}
+                  </dd>
+                </div>
+              </dl>
+
+              <div class="space-y-3 rounded-lg border border-default bg-muted/30 p-3">
+                <h4 class="text-xs font-bold uppercase tracking-wide text-muted">
+                  Selection Rule
+                </h4>
+                <div class="flex flex-wrap items-center gap-2 text-sm font-medium">
+                  <span>Choose</span>
+                  <UInput
+                    v-model.number="selectedGroup.chooseCount"
+                    type="number"
+                    :min="1"
+                    :max="selectedGroup.coupons.length"
+                    class="w-16"
+                    size="sm"
+                  />
+                  <span>Coupons from</span>
+                  <UInput
+                    :model-value="selectedGroup.coupons.length"
+                    type="number"
+                    disabled
+                    class="w-16"
+                    size="sm"
+                  />
+                  <span>Coupons</span>
+                </div>
+                <p class="text-xs text-muted">
+                  ผู้ใช้เลือกได้ {{ selectedGroup.chooseCount }} จาก {{ selectedGroup.coupons.length }} คูปองในกลุ่มนี้
+                </p>
               </div>
 
-              <div class="grid grid-cols-3 gap-2">
-                <div
-                  class="rounded-md border px-3 py-2"
-                  :class="selectedGroup.inheritCampaignQuota
-                    ? 'border-default bg-muted/40 opacity-70'
-                    : 'border-default bg-elevated'"
-                >
-                  <p class="text-xs text-muted">
-                    Per Campaign
-                    <span
-                      v-if="selectedGroup.inheritCampaignQuota"
-                      class="text-dimmed"
-                    >(inherited)</span>
-                  </p>
-                  <p class="font-semibold tabular-nums">
-                    {{ formatNumber(effectiveGroupQuota.perCampaign) }}
-                  </p>
+              <div class="space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                  <h4 class="text-xs font-bold uppercase tracking-wide text-muted">
+                    Group Quota
+                  </h4>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs text-muted">Inherit Campaign Quota</span>
+                    <USwitch
+                      :model-value="selectedGroup.inheritCampaignQuota"
+                      @update:model-value="onGroupInheritChange"
+                    />
+                  </div>
                 </div>
-                <div
-                  class="rounded-md border px-3 py-2"
-                  :class="selectedGroup.inheritCampaignQuota
-                    ? 'border-default bg-muted/40 opacity-70'
-                    : 'border-default bg-elevated'"
-                >
-                  <p class="text-xs text-muted">
-                    Per Day
-                    <span
-                      v-if="selectedGroup.inheritCampaignQuota"
-                      class="text-dimmed"
-                    >(inherited)</span>
-                  </p>
-                  <p class="font-semibold tabular-nums">
-                    {{ formatNumber(effectiveGroupQuota.perDay) }}
-                  </p>
-                </div>
-                <div
-                  class="rounded-md border px-3 py-2"
-                  :class="selectedGroup.inheritCampaignQuota
-                    ? 'border-default bg-muted/40 opacity-70'
-                    : 'border-default bg-elevated'"
-                >
-                  <p class="text-xs text-muted">
-                    Per User
-                    <span
-                      v-if="selectedGroup.inheritCampaignQuota"
-                      class="text-dimmed"
-                    >(inherited)</span>
-                  </p>
-                  <p class="font-semibold tabular-nums">
-                    {{ formatNumber(effectiveGroupQuota.perUser) }}
-                  </p>
+
+                <div class="grid grid-cols-3 gap-2">
+                  <div
+                    class="rounded-md border px-3 py-2"
+                    :class="selectedGroup.inheritCampaignQuota
+                      ? 'border-default bg-muted/40 opacity-70'
+                      : 'border-default bg-elevated'"
+                  >
+                    <p class="text-xs text-muted">
+                      Per Campaign
+                      <span
+                        v-if="selectedGroup.inheritCampaignQuota"
+                        class="text-dimmed"
+                      >(inherited)</span>
+                    </p>
+                    <p class="font-semibold tabular-nums">
+                      {{ formatNumber(effectiveGroupQuota.perCampaign) }}
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-md border px-3 py-2"
+                    :class="selectedGroup.inheritCampaignQuota
+                      ? 'border-default bg-muted/40 opacity-70'
+                      : 'border-default bg-elevated'"
+                  >
+                    <p class="text-xs text-muted">
+                      Per Day
+                      <span
+                        v-if="selectedGroup.inheritCampaignQuota"
+                        class="text-dimmed"
+                      >(inherited)</span>
+                    </p>
+                    <p class="font-semibold tabular-nums">
+                      {{ formatNumber(effectiveGroupQuota.perDay) }}
+                    </p>
+                  </div>
+                  <div
+                    class="rounded-md border px-3 py-2"
+                    :class="selectedGroup.inheritCampaignQuota
+                      ? 'border-default bg-muted/40 opacity-70'
+                      : 'border-default bg-elevated'"
+                  >
+                    <p class="text-xs text-muted">
+                      Per User
+                      <span
+                        v-if="selectedGroup.inheritCampaignQuota"
+                        class="text-dimmed"
+                      >(inherited)</span>
+                    </p>
+                    <p class="font-semibold tabular-nums">
+                      {{ formatNumber(effectiveGroupQuota.perUser) }}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </UCard>
-        </article>
+            </UCard>
+          </article>
 
-        <!-- 4. Coupons in Group -->
-        <article class="min-w-0">
-          <UCard
-            v-if="selectedGroup"
-            :ui="{
-              root: 'h-full',
-              body: 'space-y-2 p-3 sm:p-4'
-            }"
-          >
-            <template #header>
-              <div class="flex items-center justify-between gap-2">
-                <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
-                  <span class="flex size-6 items-center justify-center rounded bg-primary text-xs text-white">4</span>
-                  Coupons in Group ({{ selectedGroup.coupons.length }})
-                </h3>
-                <UButton
-                  label="Add Coupon"
-                  icon="i-lucide-plus"
-                  color="primary"
-                  variant="link"
-                  size="xs"
-                  @click="addCoupon"
-                />
-              </div>
-            </template>
-
-            <div
-              v-for="coupon in selectedGroup.coupons"
-              :key="coupon.id"
-              class="flex items-center gap-3 rounded-lg border border-default bg-elevated px-2 py-2"
+          <!-- 4. Coupons in Group -->
+          <article class="min-w-0">
+            <UCard
+              v-if="selectedGroup"
+              :ui="{
+                root: 'h-full',
+                body: 'space-y-2 p-3 sm:p-4'
+              }"
             >
-              <img
-                :src="coupon.image"
-                :alt="coupon.name"
-                class="size-10 shrink-0 rounded object-cover"
+              <template #header>
+                <div class="flex items-center justify-between gap-2">
+                  <h3 class="flex items-center gap-2 text-sm font-bold text-primary">
+                    <span class="flex size-6 items-center justify-center rounded bg-primary text-xs text-white">4</span>
+                    Coupons in Group ({{ selectedGroup.coupons.length }})
+                  </h3>
+                  <UButton
+                    label="Add Coupon"
+                    icon="i-lucide-plus"
+                    color="primary"
+                    variant="link"
+                    size="xs"
+                    @click="addCoupon"
+                  />
+                </div>
+              </template>
+
+              <div
+                v-for="coupon in selectedGroup.coupons"
+                :key="coupon.id"
+                class="flex items-center gap-3 rounded-lg border border-default bg-elevated px-2 py-2"
               >
-
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-semibold">
-                  {{ coupon.name }}
-                </p>
-                <p class="truncate text-xs text-muted">
-                  {{ coupon.description }}
-                </p>
-                <p
-                  v-if="!coupon.inheritQuota"
-                  class="mt-0.5 text-[11px] text-warning"
+                <img
+                  :src="coupon.image"
+                  :alt="coupon.name"
+                  class="size-10 shrink-0 rounded object-cover"
                 >
-                  Per Day: {{ coupon.quota.perDay }} · Per User: {{ coupon.quota.perUser }}
-                </p>
-              </div>
 
-              <div class="flex shrink-0 flex-col items-end gap-1">
-                <span
-                  class="text-[10px] font-medium uppercase"
-                  :class="coupon.inheritQuota ? 'text-success' : 'text-warning'"
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-semibold">
+                    {{ coupon.name }}
+                  </p>
+                  <p class="truncate text-xs text-muted">
+                    {{ coupon.description }}
+                  </p>
+                  <p
+                    v-if="!coupon.inheritQuota"
+                    class="mt-0.5 text-[11px] text-warning"
+                  >
+                    Per Day: {{ coupon.quota.perDay }} · Per User: {{ coupon.quota.perUser }}
+                  </p>
+                </div>
+
+                <div class="flex shrink-0 flex-col items-end gap-1">
+                  <span
+                    class="text-[10px] font-medium uppercase"
+                    :class="coupon.inheritQuota ? 'text-success' : 'text-warning'"
+                  >
+                    {{ coupon.inheritQuota ? 'Inherit' : 'Override' }}
+                  </span>
+                  <USwitch
+                    :model-value="coupon.inheritQuota"
+                    size="sm"
+                    @update:model-value="(value: boolean) => onCouponInheritChange(coupon, value)"
+                  />
+                </div>
+
+                <UDropdownMenu
+                  :items="[[
+                    { label: 'Edit', icon: 'i-lucide-pencil' },
+                    { label: 'Duplicate', icon: 'i-lucide-copy' },
+                    { label: 'Remove', icon: 'i-lucide-trash-2', color: 'error' as const }
+                  ]]"
                 >
-                  {{ coupon.inheritQuota ? 'Inherit' : 'Override' }}
-                </span>
-                <USwitch
-                  :model-value="coupon.inheritQuota"
-                  size="sm"
-                  @update:model-value="(value: boolean) => onCouponInheritChange(coupon, value)"
-                />
+                  <UButton
+                    icon="i-lucide-ellipsis-vertical"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                  />
+                </UDropdownMenu>
               </div>
-
-              <UDropdownMenu
-                :items="[[
-                  { label: 'Edit', icon: 'i-lucide-pencil' },
-                  { label: 'Duplicate', icon: 'i-lucide-copy' },
-                  { label: 'Remove', icon: 'i-lucide-trash-2', color: 'error' as const }
-                ]]"
-              >
-                <UButton
-                  icon="i-lucide-ellipsis-vertical"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                />
-              </UDropdownMenu>
-            </div>
-          </UCard>
-        </article>
+            </UCard>
+          </article>
         </div>
       </section>
 

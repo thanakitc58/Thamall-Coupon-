@@ -15,7 +15,7 @@ defineProps<{
 
 const emit = defineEmits<{
   'update:modelValue': [value: PackageMode]
-  change: [mode?: PackageMode]
+  'change': [mode?: PackageMode]
 }>()
 
 function onModeUpdate(value: PackageMode) {
