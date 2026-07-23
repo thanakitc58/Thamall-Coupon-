@@ -21,11 +21,25 @@
 
 :root {
   --ui-radius: 0.25rem;
+
+  /* Page surfaces */
   --ui-bg: #F2F2F2;
-  --ui-bg-elevated: #FFFFFF;
   --ui-bg-muted: #F2F2F2;
+  --ui-bg-elevated: #FFFFFF;
   --ui-bg-accented: #E8E8E8;
+  --ui-bg-inverted: #1A1A1A;
+
+  /* Text — keep labels readable */
+  --ui-text: #1A1A1A;
+  --ui-text-highlighted: #1A1A1A;
+  --ui-text-toned: #404040;
   --ui-text-muted: #707070;
+  --ui-text-dimmed: #9A9A9A;
+  --ui-text-inverted: #FFFFFF;
+
+  /* Borders */
   --ui-border: #E5E5E5;
-  --ui-primary: var(--ui-color-primary-500);
+  --ui-border-muted: #EBEBEB;
+  --ui-border-accented: #D4D4D4;
+  --ui-border-inverted: #1A1A1A;
 }
