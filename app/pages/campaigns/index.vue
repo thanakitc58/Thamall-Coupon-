@@ -1,46 +1,35 @@
 <script setup lang="ts">
+import type {
+  Campaign,
+  CouponGroup,
+  CouponItem,
+  QuotaLimits
+} from '~/types/campaign'
+import type { DeliveryMode } from '~/types/coupon-package'
+import {
+  capQuotaToParent,
+  cloneQuota,
+  COUPON_IMAGE_POOL,
+  createId
+} from '~/types/campaign'
+
 definePageMeta({
   layout: 'cms'
 })
 
 const toast = useToast()
 
-type QuotaLimits = {
-  perCampaign: number
-  perDay: number
-  perUser: number
-}
-
-type CouponItem = {
-  id: string
-  name: string
-  description: string
-  image: string
-  inheritQuota: boolean
-  quota: QuotaLimits
-}
-
-type CouponGroup = {
-  id: string
-  name: string
-  description: string
-  chooseCount: number
-  coupons: CouponItem[]
-  inheritCampaignQuota: boolean
-  quota: QuotaLimits
-}
-
-const campaign = ref({
+const campaign = ref<Campaign>({
   name: 'Mid Year Sale',
   description: 'แคมเปญกลางปี เลือกคูปองตามกลุ่มที่กำหนด',
   startDate: '2025-06-01',
   endDate: '2025-06-30',
-  status: 'Active' as const,
+  status: 'Active',
   quota: {
     perCampaign: 10000,
     perDay: 500,
     perUser: 2
-  } satisfies QuotaLimits
+  }
 })
 
 const groups = ref<CouponGroup[]>([
@@ -56,7 +45,7 @@ const groups = ref<CouponGroup[]>([
         id: 'a',
         name: 'Coupon A',
         description: 'ส่วนลด 50 บาท',
-        image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=80&h=80&fit=crop',
+        image: COUPON_IMAGE_POOL[0]!,
         inheritQuota: true,
         quota: { perCampaign: 10000, perDay: 500, perUser: 2 }
       },
@@ -64,7 +53,7 @@ const groups = ref<CouponGroup[]>([
         id: 'b',
         name: 'Coupon B',
         description: 'ส่วนลด 100 บาท',
-        image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=80&h=80&fit=crop',
+        image: COUPON_IMAGE_POOL[1]!,
         inheritQuota: false,
         quota: { perCampaign: 200, perDay: 20, perUser: 1 }
       },
@@ -72,7 +61,7 @@ const groups = ref<CouponGroup[]>([
         id: 'c',
         name: 'Coupon C',
         description: 'ซื้อ 1 แถม 1',
-        image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=80&h=80&fit=crop',
+        image: COUPON_IMAGE_POOL[2]!,
         inheritQuota: true,
         quota: { perCampaign: 10000, perDay: 500, perUser: 2 }
       },
@@ -80,7 +69,7 @@ const groups = ref<CouponGroup[]>([
         id: 'd',
         name: 'Coupon D',
         description: 'ส่วนลด 30%',
-        image: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=80&h=80&fit=crop',
+        image: COUPON_IMAGE_POOL[3]!,
         inheritQuota: true,
         quota: { perCampaign: 10000, perDay: 500, perUser: 2 }
       },
@@ -88,7 +77,7 @@ const groups = ref<CouponGroup[]>([
         id: 'e',
         name: 'Coupon E',
         description: 'ฟรีเครื่องดื่ม',
-        image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=80&h=80&fit=crop',
+        image: COUPON_IMAGE_POOL[4]!,
         inheritQuota: false,
         quota: { perCampaign: 100, perDay: 10, perUser: 1 }
       },
@@ -96,7 +85,7 @@ const groups = ref<CouponGroup[]>([
         id: 'f',
         name: 'Coupon F',
         description: 'ส่วนลด 80 บาท',
-        image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=80&h=80&fit=crop',
+        image: COUPON_IMAGE_POOL[5]!,
         inheritQuota: true,
         quota: { perCampaign: 10000, perDay: 500, perUser: 2 }
       }
@@ -186,9 +175,6 @@ const selectedGroup = computed(
   () => groups.value.find(group => group.id === selectedGroupId.value) ?? groups.value[0]
 )
 
-const formatNumber = (value: number) =>
-  new Intl.NumberFormat('en-US').format(value)
-
 const effectiveGroupQuota = computed(() => {
   const group = selectedGroup.value
   if (!group) {
@@ -198,8 +184,71 @@ const effectiveGroupQuota = computed(() => {
   return group.inheritCampaignQuota ? campaign.value.quota : group.quota
 })
 
+const formatNumber = (value: number) =>
+  new Intl.NumberFormat('en-US').format(value)
+
+const statusColor = computed(() => {
+  if (campaign.value.status === 'Active') {
+    return 'success' as const
+  }
+  if (campaign.value.status === 'Draft') {
+    return 'warning' as const
+  }
+  return 'neutral' as const
+})
+
 function selectGroup(id: string) {
   selectedGroupId.value = id
+}
+
+function clampChooseCount(group: CouponGroup) {
+  const max = Math.max(group.coupons.length, 0)
+  if (max === 0) {
+    group.chooseCount = 0
+    return
+  }
+  if (group.chooseCount < 1) {
+    group.chooseCount = 1
+  }
+  if (group.chooseCount > max) {
+    group.chooseCount = max
+  }
+}
+
+function cascadeQuotaFromCampaign() {
+  for (const group of groups.value) {
+    if (group.inheritCampaignQuota) {
+      group.quota = cloneQuota(campaign.value.quota)
+    } else {
+      group.quota = capQuotaToParent(group.quota, campaign.value.quota)
+    }
+
+    const parent = group.inheritCampaignQuota
+      ? campaign.value.quota
+      : group.quota
+
+    for (const coupon of group.coupons) {
+      if (coupon.inheritQuota) {
+        coupon.quota = cloneQuota(parent)
+      } else {
+        coupon.quota = capQuotaToParent(coupon.quota, parent)
+      }
+    }
+  }
+}
+
+function cascadeQuotaFromGroup(group: CouponGroup) {
+  const parent = group.inheritCampaignQuota
+    ? campaign.value.quota
+    : group.quota
+
+  for (const coupon of group.coupons) {
+    if (coupon.inheritQuota) {
+      coupon.quota = cloneQuota(parent)
+    } else {
+      coupon.quota = capQuotaToParent(coupon.quota, parent)
+    }
+  }
 }
 
 function onGroupInheritChange(value: boolean) {
@@ -210,59 +259,484 @@ function onGroupInheritChange(value: boolean) {
 
   group.inheritCampaignQuota = value
   if (value) {
-    group.quota = { ...campaign.value.quota }
+    group.quota = cloneQuota(campaign.value.quota)
   }
+  cascadeQuotaFromGroup(group)
 }
 
 function onCouponInheritChange(coupon: CouponItem, value: boolean) {
   coupon.inheritQuota = value
   if (value) {
-    coupon.quota = { ...effectiveGroupQuota.value }
+    coupon.quota = cloneQuota(effectiveGroupQuota.value)
+    return
+  }
+
+  openEditCoupon(coupon)
+}
+
+function updateGroupQuotaField(field: keyof QuotaLimits, raw: number | string) {
+  const group = selectedGroup.value
+  if (!group || group.inheritCampaignQuota) {
+    return
+  }
+
+  const next = Number(raw)
+  const value = Number.isFinite(next) && next >= 0 ? Math.floor(next) : 0
+  group.quota[field] = Math.min(value, campaign.value.quota[field])
+  cascadeQuotaFromGroup(group)
+}
+
+watch(
+  () => selectedGroup.value?.coupons.length,
+  () => {
+    if (selectedGroup.value) {
+      clampChooseCount(selectedGroup.value)
+    }
+  }
+)
+
+watch(
+  () => selectedGroup.value?.chooseCount,
+  (value) => {
+    const group = selectedGroup.value
+    if (!group || value === undefined) {
+      return
+    }
+    clampChooseCount(group)
+  }
+)
+
+// --- Campaign edit ---
+const isCampaignModalOpen = ref(false)
+
+function openEditCampaign() {
+  isCampaignModalOpen.value = true
+}
+
+function saveCampaign(value: Campaign) {
+  campaign.value = value
+  cascadeQuotaFromCampaign()
+  toast.add({
+    title: 'อัปเดตแคมเปญแล้ว',
+    description: `${value.name} (mock — ยังไม่บันทึก DB)`,
+    color: 'success',
+    icon: 'i-lucide-check'
+  })
+}
+
+// --- Group add/edit ---
+const isGroupModalOpen = ref(false)
+const editingGroupId = ref<string | null>(null)
+
+const editingGroup = computed(
+  () => groups.value.find(group => group.id === editingGroupId.value) ?? null
+)
+
+const isEditingGroup = computed(() => editingGroupId.value !== null)
+
+function openAddGroup() {
+  editingGroupId.value = null
+  isGroupModalOpen.value = true
+}
+
+function openEditGroup() {
+  if (!selectedGroup.value) {
+    return
+  }
+  editingGroupId.value = selectedGroup.value.id
+  isGroupModalOpen.value = true
+}
+
+function saveGroup(payload: {
+  name: string
+  description: string
+  chooseCount: number
+  inheritCampaignQuota: boolean
+  quota: QuotaLimits
+}) {
+  if (editingGroupId.value) {
+    const group = groups.value.find(item => item.id === editingGroupId.value)
+    if (!group) {
+      return
+    }
+
+    group.name = payload.name
+    group.description = payload.description
+    group.chooseCount = payload.chooseCount
+    group.inheritCampaignQuota = payload.inheritCampaignQuota
+    group.quota = payload.inheritCampaignQuota
+      ? cloneQuota(campaign.value.quota)
+      : capQuotaToParent(payload.quota, campaign.value.quota)
+
+    clampChooseCount(group)
+    cascadeQuotaFromGroup(group)
+
+    toast.add({
+      title: 'อัปเดตกลุ่มแล้ว',
+      description: group.name,
+      color: 'success',
+      icon: 'i-lucide-check'
+    })
+    return
+  }
+
+  const newGroup: CouponGroup = {
+    id: createId('group'),
+    name: payload.name,
+    description: payload.description,
+    chooseCount: 1,
+    inheritCampaignQuota: payload.inheritCampaignQuota,
+    quota: payload.inheritCampaignQuota
+      ? cloneQuota(campaign.value.quota)
+      : capQuotaToParent(payload.quota, campaign.value.quota),
+    coupons: []
+  }
+
+  groups.value.push(newGroup)
+  selectedGroupId.value = newGroup.id
+
+  toast.add({
+    title: 'เพิ่มกลุ่มแล้ว',
+    description: `${newGroup.name} — เพิ่มคูปองใน Step 4 ได้เลย`,
+    color: 'success',
+    icon: 'i-lucide-plus'
+  })
+}
+
+// --- Coupon add/edit/duplicate/remove ---
+const isCouponModalOpen = ref(false)
+const editingCouponId = ref<string | null>(null)
+
+const editingCoupon = computed(() => {
+  if (!selectedGroup.value || !editingCouponId.value) {
+    return null
+  }
+  return selectedGroup.value.coupons.find(item => item.id === editingCouponId.value) ?? null
+})
+
+const isEditingCoupon = computed(() => editingCouponId.value !== null)
+
+function openAddCoupon() {
+  editingCouponId.value = null
+  isCouponModalOpen.value = true
+}
+
+function openEditCoupon(coupon: CouponItem) {
+  editingCouponId.value = coupon.id
+  isCouponModalOpen.value = true
+}
+
+function saveCoupon(payload: {
+  name: string
+  description: string
+  image: string
+  inheritQuota: boolean
+  quota: QuotaLimits
+}) {
+  const group = selectedGroup.value
+  if (!group) {
+    return
+  }
+
+  const parent = effectiveGroupQuota.value
+  const quota = payload.inheritQuota
+    ? cloneQuota(parent)
+    : capQuotaToParent(payload.quota, parent)
+
+  if (editingCouponId.value) {
+    const coupon = group.coupons.find(item => item.id === editingCouponId.value)
+    if (!coupon) {
+      return
+    }
+
+    coupon.name = payload.name
+    coupon.description = payload.description
+    coupon.image = payload.image
+    coupon.inheritQuota = payload.inheritQuota
+    coupon.quota = quota
+
+    toast.add({
+      title: 'อัปเดตคูปองแล้ว',
+      description: coupon.name,
+      color: 'success',
+      icon: 'i-lucide-check'
+    })
+    return
+  }
+
+  group.coupons.push({
+    id: createId('coupon'),
+    name: payload.name,
+    description: payload.description,
+    image: payload.image,
+    inheritQuota: payload.inheritQuota,
+    quota
+  })
+
+  clampChooseCount(group)
+
+  toast.add({
+    title: 'เพิ่มคูปองแล้ว',
+    description: `${payload.name} ใน ${group.name}`,
+    color: 'success',
+    icon: 'i-lucide-plus'
+  })
+}
+
+function duplicateCoupon(coupon: CouponItem) {
+  const group = selectedGroup.value
+  if (!group) {
+    return
+  }
+
+  group.coupons.push({
+    ...coupon,
+    id: createId('coupon'),
+    name: `${coupon.name} (copy)`,
+    quota: cloneQuota(coupon.quota)
+  })
+  clampChooseCount(group)
+
+  toast.add({
+    title: 'คัดลอกคูปองแล้ว',
+    description: `${coupon.name} (copy)`,
+    color: 'info',
+    icon: 'i-lucide-copy'
+  })
+}
+
+const isDeleteCouponOpen = ref(false)
+const deleteCouponTarget = ref<CouponItem | null>(null)
+
+function openDeleteCoupon(coupon: CouponItem) {
+  deleteCouponTarget.value = coupon
+  isDeleteCouponOpen.value = true
+}
+
+function confirmDeleteCoupon() {
+  const group = selectedGroup.value
+  const target = deleteCouponTarget.value
+  if (!group || !target) {
+    isDeleteCouponOpen.value = false
+    return
+  }
+
+  group.coupons = group.coupons.filter(item => item.id !== target.id)
+  clampChooseCount(group)
+  isDeleteCouponOpen.value = false
+  deleteCouponTarget.value = null
+
+  toast.add({
+    title: 'ลบคูปองแล้ว',
+    description: target.name,
+    color: 'warning',
+    icon: 'i-lucide-trash-2'
+  })
+}
+
+function couponMenuItems(coupon: CouponItem) {
+  return [[
+    {
+      label: 'Edit',
+      icon: 'i-lucide-pencil',
+      onSelect: () => openEditCoupon(coupon)
+    },
+    {
+      label: 'Duplicate',
+      icon: 'i-lucide-copy',
+      onSelect: () => duplicateCoupon(coupon)
+    },
+    {
+      label: 'Remove',
+      icon: 'i-lucide-trash-2',
+      color: 'error' as const,
+      onSelect: () => openDeleteCoupon(coupon)
+    }
+  ]]
+}
+
+// --- Preview / draft / publish ---
+const isPreviewOpen = ref(false)
+
+function previewUserView() {
+  if (!selectedGroup.value || selectedGroup.value.coupons.length === 0) {
+    toast.add({
+      title: 'ยังไม่มีคูปองในกลุ่ม',
+      description: 'เพิ่มคูปองก่อนดู Preview',
+      color: 'warning',
+      icon: 'i-lucide-alert-triangle'
+    })
+    return
+  }
+
+  if (selectedGroup.value.chooseCount < 1) {
+    toast.add({
+      title: 'ตั้ง Selection Rule ก่อน',
+      description: 'จำนวนที่เลือกได้ต้องอย่างน้อย 1',
+      color: 'warning',
+      icon: 'i-lucide-alert-triangle'
+    })
+    return
+  }
+
+  isPreviewOpen.value = true
+}
+
+function onPreviewConfirm(selectedIds: string[]) {
+  const group = selectedGroup.value
+  if (!group) {
+    return
+  }
+
+  const names = group.coupons
+    .filter(coupon => selectedIds.includes(coupon.id))
+    .map(coupon => coupon.name)
+
+  toast.add({
+    title: 'ผู้ใช้เลือกคูปองแล้ว (mock)',
+    description: names.join(', '),
+    color: 'success',
+    icon: 'i-lucide-gift'
+  })
+}
+
+// --- Delivery (same pattern as 4.2) ---
+const deliveryMode = ref<DeliveryMode | undefined>(undefined)
+
+const deliveryOptions = [
+  {
+    value: 'everyone' as const,
+    label: '1. ส่งทุกคน',
+    description: 'มอบสิทธิ์คูปองแคมเปญให้ผู้ใช้งานทั้งหมดในระบบ'
+  },
+  {
+    value: 'selected' as const,
+    label: '2. ส่งเฉพาะบางคน',
+    description: 'เลือกผู้รับรายบุคคลจากรายชื่อ'
+  },
+  {
+    value: 'member_tier' as const,
+    label: '3. ส่งให้เมมเบอร์ตามระดับ',
+    description: 'เลือกตามระดับสมาชิก เช่น Bronze, Silver, Gold'
+  }
+]
+
+const mockUsers = [
+  { label: 'สมชาย ใจดี (somchai@example.com)', value: 'u1' },
+  { label: 'สมหญิง รักดี (somying@example.com)', value: 'u2' },
+  { label: 'วิชัย พาณิชย์ (wichai@example.com)', value: 'u3' },
+  { label: 'นภา สุขใจ (napa@example.com)', value: 'u4' },
+  { label: 'อารี มีสุข (aree@example.com)', value: 'u5' }
+]
+
+const selectedUserIds = ref<string[]>([])
+
+const memberTiers = [
+  { label: 'Bronze', value: 'bronze', description: 'สมาชิกระดับบรอนซ์' },
+  { label: 'Silver', value: 'silver', description: 'สมาชิกระดับซิลเวอร์' },
+  { label: 'Gold', value: 'gold', description: 'สมาชิกระดับโกลด์' }
+]
+
+const selectedTiers = ref<string[]>([])
+
+const hasDeliveryTarget = computed(() => {
+  if (!deliveryMode.value) {
+    return false
+  }
+
+  if (deliveryMode.value === 'everyone') {
+    return true
+  }
+
+  if (deliveryMode.value === 'selected') {
+    return selectedUserIds.value.length > 0
+  }
+
+  return selectedTiers.value.length > 0
+})
+
+const deliverySummary = computed(() => {
+  if (deliveryMode.value === 'everyone') {
+    return 'ส่งให้ทุกคนในระบบ'
+  }
+
+  if (deliveryMode.value === 'selected') {
+    return `ส่งเฉพาะ ${selectedUserIds.value.length} คนที่เลือก`
+  }
+
+  if (deliveryMode.value === 'member_tier') {
+    const labels = memberTiers
+      .filter(tier => selectedTiers.value.includes(tier.value))
+      .map(tier => tier.label)
+
+    return labels.length
+      ? `ส่งให้เมมเบอร์: ${labels.join(', ')}`
+      : 'ยังไม่ได้เลือกระดับสมาชิก'
+  }
+
+  return 'ยังไม่ได้เลือกวิธีส่ง'
+})
+
+function onDeliveryModeChange(mode?: DeliveryMode) {
+  if (mode !== 'selected') {
+    selectedUserIds.value = []
+  }
+
+  if (mode !== 'member_tier') {
+    selectedTiers.value = []
   }
 }
 
-function previewUserView() {
+function cancelCampaign() {
   toast.add({
-    title: 'Preview (User View)',
-    description: 'เปิดมุมมองผู้ใช้ (demo mock)',
-    color: 'info',
-    icon: 'i-lucide-eye'
+    title: 'Cancelled',
+    description: 'Changes were discarded (mock).',
+    color: 'neutral',
+    icon: 'i-lucide-x'
   })
 }
 
-function saveDraft() {
-  toast.add({
-    title: 'Draft saved',
-    description: `${campaign.value.name} — ${selectedGroup.value?.name} (demo mock)`,
-    color: 'neutral',
-    icon: 'i-lucide-save'
-  })
-}
+const canSaveCampaign = computed(() => {
+  if (!hasDeliveryTarget.value || groups.value.length === 0) {
+    return false
+  }
+
+  return groups.value.every(
+    group => group.coupons.length > 0 && group.chooseCount >= 1
+  )
+})
 
 function publishCampaign() {
+  const invalid = groups.value.find(
+    group => group.coupons.length === 0 || group.chooseCount < 1
+  )
+
+  if (invalid) {
+    toast.add({
+      title: 'Publish ไม่ได้',
+      description: `กลุ่ม "${invalid.name}" ต้องมีคูปองและ Selection Rule`,
+      color: 'warning',
+      icon: 'i-lucide-alert-triangle'
+    })
+    return
+  }
+
+  if (!hasDeliveryTarget.value) {
+    toast.add({
+      title: 'Publish ไม่ได้',
+      description: 'กรุณาเลือกวิธีส่งมอบคูปองให้ครบ',
+      color: 'warning',
+      icon: 'i-lucide-alert-triangle'
+    })
+    return
+  }
+
+  campaign.value.status = 'Active'
   toast.add({
-    title: 'Campaign published',
-    description: `${campaign.value.name} published (demo mock)`,
+    title: 'Save & Send Gift Card',
+    description: `${campaign.value.name} — ${deliverySummary.value}`,
     color: 'success',
-    icon: 'i-lucide-send'
-  })
-}
-
-function addGroup() {
-  toast.add({
-    title: 'Add Group',
-    description: 'ฟอร์มเพิ่มกลุ่มจะมาในรอบถัดไป (MVP mock)',
-    color: 'info',
-    icon: 'i-lucide-plus'
-  })
-}
-
-function addCoupon() {
-  toast.add({
-    title: 'Add Coupon',
-    description: 'ฟอร์มเพิ่มคูปองจะมาในรอบถัดไป (MVP mock)',
-    color: 'info',
-    icon: 'i-lucide-plus'
+    icon: 'i-lucide-gift'
   })
 }
 </script>
@@ -270,42 +744,45 @@ function addCoupon() {
 <template>
   <div>
     <header class="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-default bg-default/80 px-4 backdrop-blur-md sm:px-8">
-      <nav
-        class="flex items-center gap-2 text-sm sm:text-base"
-        aria-label="Breadcrumb"
-      >
-        <span class="font-extrabold text-primary">Campaigns</span>
+      <div class="flex items-center gap-2 text-sm sm:text-base">
+        <span class="font-extrabold text-primary">Coupon Manager</span>
         <span class="text-muted">/</span>
-        <span class="text-muted">{{ campaign.name }}</span>
-        <span class="text-muted">/</span>
-        <span class="text-muted">{{ selectedGroup?.name }}</span>
-      </nav>
+        <span class="text-muted">Flexible Coupon Group Selection</span>
+      </div>
 
-      <div class="flex items-center gap-2 sm:gap-3">
-        <UTooltip text="Notifications">
-          <UChip
-            color="error"
-            size="3xl"
-            :show="true"
-            :text="12"
-          >
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden items-center gap-1 sm:flex">
+          <UTooltip text="Notifications">
             <UButton
               icon="i-lucide-bell"
               color="neutral"
               variant="ghost"
               size="sm"
             />
-          </UChip>
-        </UTooltip>
-
-        <div class="hidden items-center gap-2 sm:flex">
-          <UAvatar
-            src="https://api.dicebear.com/9.x/avataaars/svg?seed=Admin"
-            alt="Admin avatar"
-            size="xs"
-          />
-          <span class="text-sm font-medium">Admin</span>
+          </UTooltip>
+          <UTooltip text="Help">
+            <UButton
+              icon="i-lucide-circle-help"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+            />
+          </UTooltip>
         </div>
+
+        <UButton
+          label="Cancel"
+          color="neutral"
+          variant="ghost"
+          @click="cancelCampaign"
+        />
+        <UButton
+          label="Save & Send Gift Card"
+          icon="i-lucide-gift"
+          color="primary"
+          :disabled="!canSaveCampaign"
+          @click="publishCampaign"
+        />
       </div>
     </header>
 
@@ -314,50 +791,34 @@ function addCoupon() {
         <div>
           <div class="flex flex-wrap items-center gap-3">
             <h2 class="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              {{ selectedGroup?.name }}
+              4.1 Flexible Coupon Group Selection
             </h2>
             <UBadge
-              label="Active"
-              color="success"
+              :label="campaign.status"
+              :color="statusColor"
               variant="subtle"
             />
           </div>
-          <p class="mt-1 text-muted">
-            Campaign: {{ campaign.name }}
+          <p class="mt-2 max-w-3xl text-muted">
+            ตั้งกลุ่มคูปองแบบเลือก X จาก Y พร้อม Quota Cap Max และส่งมอบให้ผู้รับ
+            — {{ campaign.name }}{{ selectedGroup ? ` / ${selectedGroup.name}` : '' }}
           </p>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
-          <UButton
-            label="Preview (User View)"
-            icon="i-lucide-eye"
-            color="neutral"
-            variant="outline"
-            @click="previewUserView"
-          />
-          <UButton
-            label="Save Draft"
-            icon="i-lucide-save"
-            color="neutral"
-            variant="outline"
-            @click="saveDraft"
-          />
-          <UButton
-            label="Publish"
-            icon="i-lucide-send"
-            color="primary"
-            @click="publishCampaign"
-          />
-        </div>
+        <UButton
+          label="Preview (User View)"
+          icon="i-lucide-eye"
+          color="neutral"
+          variant="outline"
+          @click="previewUserView"
+        />
       </section>
 
-      <!-- Top-to-bottom workflow: 1–2 then 3–4 -->
       <section
         class="space-y-4"
         aria-label="Campaign configuration panels"
       >
         <div class="grid gap-4 lg:grid-cols-2">
-          <!-- 1. Campaign Information -->
           <article class="min-w-0">
             <UCard
               :ui="{
@@ -376,6 +837,7 @@ function addCoupon() {
                     color="primary"
                     variant="link"
                     size="xs"
+                    @click="openEditCampaign"
                   />
                 </div>
               </template>
@@ -412,7 +874,7 @@ function addCoupon() {
                   <dd class="mt-1">
                     <UBadge
                       :label="campaign.status"
-                      color="success"
+                      :color="statusColor"
                       variant="subtle"
                     />
                   </dd>
@@ -455,7 +917,6 @@ function addCoupon() {
             </UCard>
           </article>
 
-          <!-- 2. Coupon Groups -->
           <article class="min-w-0">
             <UCard
               :ui="{
@@ -475,7 +936,7 @@ function addCoupon() {
                     color="primary"
                     variant="link"
                     size="xs"
-                    @click="addGroup"
+                    @click="openAddGroup"
                   />
                 </div>
               </template>
@@ -507,12 +968,18 @@ function addCoupon() {
                   />
                 </div>
               </button>
+
+              <p
+                v-if="groups.length === 0"
+                class="text-sm text-muted"
+              >
+                ยังไม่มีกลุ่ม — กด Add Group เพื่อเริ่ม
+              </p>
             </UCard>
           </article>
         </div>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <!-- 3. Group Detail -->
           <article class="min-w-0">
             <UCard
               v-if="selectedGroup"
@@ -532,6 +999,7 @@ function addCoupon() {
                     color="primary"
                     variant="link"
                     size="xs"
+                    @click="openEditGroup"
                   />
                 </div>
               </template>
@@ -550,7 +1018,7 @@ function addCoupon() {
                     Description
                   </dt>
                   <dd class="mt-0.5 text-toned">
-                    {{ selectedGroup.description }}
+                    {{ selectedGroup.description || '—' }}
                   </dd>
                 </div>
               </dl>
@@ -564,8 +1032,9 @@ function addCoupon() {
                   <UInput
                     v-model.number="selectedGroup.chooseCount"
                     type="number"
-                    :min="1"
-                    :max="selectedGroup.coupons.length"
+                    :min="selectedGroup.coupons.length ? 1 : 0"
+                    :max="Math.max(selectedGroup.coupons.length, 1)"
+                    :disabled="selectedGroup.coupons.length === 0"
                     class="w-16"
                     size="sm"
                   />
@@ -598,64 +1067,80 @@ function addCoupon() {
                   </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2">
-                  <div
-                    class="rounded-md border px-3 py-2"
-                    :class="selectedGroup.inheritCampaignQuota
-                      ? 'border-default bg-muted/40 opacity-70'
-                      : 'border-default bg-elevated'"
-                  >
+                <div
+                  v-if="selectedGroup.inheritCampaignQuota"
+                  class="grid grid-cols-3 gap-2"
+                >
+                  <div class="rounded-md border border-default bg-muted/40 px-3 py-2 opacity-70">
                     <p class="text-xs text-muted">
-                      Per Campaign
-                      <span
-                        v-if="selectedGroup.inheritCampaignQuota"
-                        class="text-dimmed"
-                      >(inherited)</span>
+                      Per Campaign <span class="text-dimmed">(inherited)</span>
                     </p>
                     <p class="font-semibold tabular-nums">
                       {{ formatNumber(effectiveGroupQuota.perCampaign) }}
                     </p>
                   </div>
-                  <div
-                    class="rounded-md border px-3 py-2"
-                    :class="selectedGroup.inheritCampaignQuota
-                      ? 'border-default bg-muted/40 opacity-70'
-                      : 'border-default bg-elevated'"
-                  >
+                  <div class="rounded-md border border-default bg-muted/40 px-3 py-2 opacity-70">
                     <p class="text-xs text-muted">
-                      Per Day
-                      <span
-                        v-if="selectedGroup.inheritCampaignQuota"
-                        class="text-dimmed"
-                      >(inherited)</span>
+                      Per Day <span class="text-dimmed">(inherited)</span>
                     </p>
                     <p class="font-semibold tabular-nums">
                       {{ formatNumber(effectiveGroupQuota.perDay) }}
                     </p>
                   </div>
-                  <div
-                    class="rounded-md border px-3 py-2"
-                    :class="selectedGroup.inheritCampaignQuota
-                      ? 'border-default bg-muted/40 opacity-70'
-                      : 'border-default bg-elevated'"
-                  >
+                  <div class="rounded-md border border-default bg-muted/40 px-3 py-2 opacity-70">
                     <p class="text-xs text-muted">
-                      Per User
-                      <span
-                        v-if="selectedGroup.inheritCampaignQuota"
-                        class="text-dimmed"
-                      >(inherited)</span>
+                      Per User <span class="text-dimmed">(inherited)</span>
                     </p>
                     <p class="font-semibold tabular-nums">
                       {{ formatNumber(effectiveGroupQuota.perUser) }}
                     </p>
                   </div>
                 </div>
+
+                <div
+                  v-else
+                  class="space-y-2"
+                >
+                  <p class="text-xs text-warning">
+                    Override — ค่าต้องไม่เกิน Campaign Cap Max
+                  </p>
+                  <div class="grid grid-cols-3 gap-2">
+                    <UFormField label="Per Campaign">
+                      <UInput
+                        :model-value="selectedGroup.quota.perCampaign"
+                        type="number"
+                        :min="0"
+                        :max="campaign.quota.perCampaign"
+                        size="sm"
+                        @update:model-value="updateGroupQuotaField('perCampaign', $event as string | number)"
+                      />
+                    </UFormField>
+                    <UFormField label="Per Day">
+                      <UInput
+                        :model-value="selectedGroup.quota.perDay"
+                        type="number"
+                        :min="0"
+                        :max="campaign.quota.perDay"
+                        size="sm"
+                        @update:model-value="updateGroupQuotaField('perDay', $event as string | number)"
+                      />
+                    </UFormField>
+                    <UFormField label="Per User">
+                      <UInput
+                        :model-value="selectedGroup.quota.perUser"
+                        type="number"
+                        :min="0"
+                        :max="campaign.quota.perUser"
+                        size="sm"
+                        @update:model-value="updateGroupQuotaField('perUser', $event as string | number)"
+                      />
+                    </UFormField>
+                  </div>
+                </div>
               </div>
             </UCard>
           </article>
 
-          <!-- 4. Coupons in Group -->
           <article class="min-w-0">
             <UCard
               v-if="selectedGroup"
@@ -676,7 +1161,7 @@ function addCoupon() {
                     color="primary"
                     variant="link"
                     size="xs"
-                    @click="addCoupon"
+                    @click="openAddCoupon"
                   />
                 </div>
               </template>
@@ -703,7 +1188,7 @@ function addCoupon() {
                     v-if="!coupon.inheritQuota"
                     class="mt-0.5 text-[11px] text-warning"
                   >
-                    Per Day: {{ coupon.quota.perDay }} · Per User: {{ coupon.quota.perUser }}
+                    Cap: Day {{ coupon.quota.perDay }} · User {{ coupon.quota.perUser }} · Campaign {{ formatNumber(coupon.quota.perCampaign) }}
                   </p>
                 </div>
 
@@ -721,13 +1206,7 @@ function addCoupon() {
                   />
                 </div>
 
-                <UDropdownMenu
-                  :items="[[
-                    { label: 'Edit', icon: 'i-lucide-pencil' },
-                    { label: 'Duplicate', icon: 'i-lucide-copy' },
-                    { label: 'Remove', icon: 'i-lucide-trash-2', color: 'error' as const }
-                  ]]"
-                >
+                <UDropdownMenu :items="couponMenuItems(coupon)">
                   <UButton
                     icon="i-lucide-ellipsis-vertical"
                     color="neutral"
@@ -736,20 +1215,88 @@ function addCoupon() {
                   />
                 </UDropdownMenu>
               </div>
+
+              <p
+                v-if="selectedGroup.coupons.length === 0"
+                class="px-1 py-6 text-center text-sm text-muted"
+              >
+                ยังไม่มีคูปองในกลุ่มนี้ — กด Add Coupon
+              </p>
             </UCard>
           </article>
         </div>
       </section>
 
-      <section>
-        <UAlert
-          color="info"
-          variant="subtle"
-          icon="i-lucide-info"
-          title="4.1 Flexible Coupon Group Selection — MVP"
-          description="โครง UI สำหรับเลือก X จาก Y คูปองในกลุ่มเดียวกัน และควบคุม Quota (Per Day / Per User / Per Campaign) ระดับ Campaign → Group → Coupon พร้อม Inherit / Override — ยังไม่เชื่อมฐานข้อมูล"
-        />
-      </section>
+      <CouponPackageDeliverySection
+        v-model:delivery-mode="deliveryMode"
+        v-model:selected-user-ids="selectedUserIds"
+        v-model:selected-tiers="selectedTiers"
+        :delivery-options="deliveryOptions"
+        :mock-users="mockUsers"
+        :member-tiers="memberTiers"
+        :delivery-summary="deliverySummary"
+        @change="onDeliveryModeChange"
+      />
     </div>
+
+    <CampaignsCampaignEditModal
+      v-model:open="isCampaignModalOpen"
+      :campaign="campaign"
+      @save="saveCampaign"
+    />
+
+    <CampaignsGroupEditModal
+      v-model:open="isGroupModalOpen"
+      :group="editingGroup"
+      :is-editing="isEditingGroup"
+      :campaign-quota="campaign.quota"
+      @save="saveGroup"
+    />
+
+    <CampaignsCouponEditModal
+      v-model:open="isCouponModalOpen"
+      :coupon="editingCoupon"
+      :is-editing="isEditingCoupon"
+      :parent-quota="effectiveGroupQuota"
+      @save="saveCoupon"
+    />
+
+    <CampaignsPreviewUserModal
+      v-model:open="isPreviewOpen"
+      :group="selectedGroup ?? null"
+      @confirm="onPreviewConfirm"
+    />
+
+    <UModal
+      v-model:open="isDeleteCouponOpen"
+      title="ลบคูปอง"
+      description="การลบนี้มีผลเฉพาะในหน้านี้ (mock)"
+    >
+      <template #body>
+        <UAlert
+          color="error"
+          variant="subtle"
+          icon="i-lucide-trash-2"
+          :title="deleteCouponTarget ? `ลบ ${deleteCouponTarget.name}?` : 'ลบคูปองนี้?'"
+          description="Selection Rule จะถูกปรับให้อัตโนมัติถ้าเกินจำนวนคูปองที่เหลือ"
+        />
+      </template>
+      <template #footer>
+        <div class="flex w-full justify-end gap-2">
+          <UButton
+            label="ยกเลิก"
+            color="neutral"
+            variant="ghost"
+            @click="isDeleteCouponOpen = false"
+          />
+          <UButton
+            label="ลบ"
+            color="error"
+            icon="i-lucide-trash-2"
+            @click="confirmDeleteCoupon"
+          />
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>

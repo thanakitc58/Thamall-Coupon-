@@ -214,11 +214,11 @@ const emit = defineEmits<{
         </div>
 
         <UAlert
-          color="neutral"
+          color="info"
           variant="subtle"
-          icon="i-lucide-info"
-          title="ขอบเขต Demo"
-          description="หน้าจอให้ลูกค้าเลือกแบ่งเองยังไม่ทำใน MVP นี้ — โหมดนี้แสดงเฉพาะฝั่งแอดมินว่าส่ง Fixed ได้โดยไม่ต้องตั้ง Pattern"
+          icon="i-lucide-eye"
+          title="ลองมุมมองลูกค้า"
+          description="กด Preview (User View) เพื่อจำลองการแบ่งคูปอง 50 / 100 / 500 / 1,000 ให้ครบมูลค่า Fixed"
         />
       </div>
     </UCard>

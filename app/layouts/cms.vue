@@ -2,19 +2,16 @@
 const route = useRoute()
 
 const navItems = [
-  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard', to: '#' },
-  { label: 'Coupon Packages', icon: 'i-lucide-package', to: '/' },
   {
-    label: 'Campaigns',
-    icon: 'i-lucide-megaphone',
+    label: 'Flexible Coupon Group Selection',
     to: '/campaigns',
     badge: '4.1'
   },
-  { label: 'Coupon Groups', icon: 'i-lucide-folders', to: '#' },
-  { label: 'Coupons', icon: 'i-lucide-ticket', to: '#' },
-  { label: 'Quota Dashboard', icon: 'i-lucide-gauge', to: '#' },
-  { label: 'Users', icon: 'i-lucide-users', to: '#' },
-  { label: 'Reports', icon: 'i-lucide-chart-column', to: '#' }
+  {
+    label: 'Parent-Child & Waterfall',
+    to: '/',
+    badge: '4.2'
+  }
 ]
 
 function isActive(to: string) {
@@ -42,27 +39,24 @@ function isActive(to: string) {
         <UButton
           v-for="item in navItems"
           :key="item.label"
-          :to="item.to === '#' ? undefined : item.to"
-          :label="item.label"
-          :icon="item.icon"
+          :to="item.to"
           :color="isActive(item.to) ? 'primary' : 'neutral'"
           :variant="isActive(item.to) ? 'solid' : 'ghost'"
-          class="justify-start"
+          class="h-auto justify-start whitespace-normal py-2 text-left"
           :ui="isActive(item.to)
             ? undefined
             : { base: 'text-white/70 hover:bg-white/10 hover:text-white' }"
         >
-          <template
-            v-if="item.badge"
-            #trailing
-          >
-            <UBadge
-              :label="item.badge"
-              color="neutral"
-              variant="subtle"
-              size="xs"
-            />
-          </template>
+          <UBadge
+            :label="item.badge"
+            color="neutral"
+            variant="subtle"
+            size="xs"
+            class="shrink-0"
+          />
+          <span class="min-w-0 flex-1 leading-snug">
+            {{ item.label }}
+          </span>
         </UButton>
       </nav>
 
