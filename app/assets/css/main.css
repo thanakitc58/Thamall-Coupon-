@@ -1,18 +1,31 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
+/* The Mall — Prestige Retail Framework */
 @theme static {
-  --font-sans: 'Public Sans', sans-serif;
+  --font-sans: 'Work Sans', sans-serif;
 
-  --color-green-50: #EFFDF5;
-  --color-green-100: #D9FBE8;
-  --color-green-200: #B3F5D1;
-  --color-green-300: #75EDAE;
-  --color-green-400: #00DC82;
-  --color-green-500: #00C16A;
-  --color-green-600: #00A155;
-  --color-green-700: #007F45;
-  --color-green-800: #016538;
-  --color-green-900: #0A5331;
-  --color-green-950: #052E16;
+  /* Brand red #EC1C24 */
+  --color-mall-50: #FEF2F2;
+  --color-mall-100: #FDE3E4;
+  --color-mall-200: #FBC7C9;
+  --color-mall-300: #F59A9E;
+  --color-mall-400: #F15B62;
+  --color-mall-500: #EC1C24;
+  --color-mall-600: #D4161D;
+  --color-mall-700: #B11218;
+  --color-mall-800: #92141A;
+  --color-mall-900: #79171C;
+  --color-mall-950: #420A0D;
+}
+
+:root {
+  --ui-radius: 0.25rem;
+  --ui-bg: #F2F2F2;
+  --ui-bg-elevated: #FFFFFF;
+  --ui-bg-muted: #F2F2F2;
+  --ui-bg-accented: #E8E8E8;
+  --ui-text-muted: #707070;
+  --ui-border: #E5E5E5;
+  --ui-primary: var(--ui-color-primary-500);
 }

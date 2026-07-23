@@ -17,22 +17,22 @@ const toast = useToast()
 
 const packageName = ref('Summer Package 1000')
 const totalValue = ref(1000)
-const description = ref('')
+const description = ref('สิทธิ์รวม 1,000 บาท — ลูกค้าเลือกแบ่งเป็น Child Pattern ตามที่กำหนด')
 
 const patterns = ref<ChildPattern[]>([
   {
     id: '1',
-    name: 'Pattern 1',
+    name: 'รูปแบบที่ 1',
     items: [{ couponValue: 1000, quantity: 1 }]
   },
   {
     id: '2',
-    name: 'Pattern 2',
+    name: 'รูปแบบที่ 2',
     items: [{ couponValue: 500, quantity: 2 }]
   },
   {
     id: '3',
-    name: 'Pattern 3',
+    name: 'รูปแบบที่ 3',
     items: [
       { couponValue: 100, quantity: 5 },
       { couponValue: 500, quantity: 1 }
@@ -47,6 +47,62 @@ const couponOptions = [
   { label: '500', value: 500 },
   { label: '1000', value: 1000 }
 ]
+
+type PackageMode = 'with_child' | 'fixed_no_child'
+type DeliveryMode = 'everyone' | 'selected' | 'member_tier'
+
+const packageMode = ref<PackageMode>('with_child')
+
+const packageModeOptions = [
+  {
+    value: 'with_child' as const,
+    label: 'ส่งแบบมี Child Patterns',
+    description: 'แอดมินกำหนดรูปแบบการแบ่งไว้ล่วงหน้า ลูกค้าเลือกได้เฉพาะรูปแบบที่ตั้งไว้'
+  },
+  {
+    value: 'fixed_no_child' as const,
+    label: 'ส่งแบบ Fixed (ไม่มี Child)',
+    description: 'ส่งมูลค่าคงที่ไปเลย เช่น 1,000 บาท — ลูกค้าไปเลือกแบ่งเองทีหลัง (ไม่ต้องสร้าง Pattern)'
+  }
+]
+
+const deliveryMode = ref<DeliveryMode | undefined>(undefined)
+
+const deliveryOptions = [
+  {
+    value: 'everyone' as const,
+    label: '1. ส่งทุกคน',
+    description: 'มอบ Gift Card ให้ผู้ใช้งานทั้งหมดในระบบ'
+  },
+  {
+    value: 'selected' as const,
+    label: '2. ส่งเฉพาะบางคน',
+    description: 'เลือกผู้รับรายบุคคลจากรายชื่อ'
+  },
+  {
+    value: 'member_tier' as const,
+    label: '3. ส่งให้เมมเบอร์ตามระดับ',
+    description: 'เลือกตามระดับสมาชิก เช่น Bronze, Silver, Gold'
+  }
+]
+
+const mockUsers = [
+  { label: 'สมชาย ใจดี (somchai@example.com)', value: 'u1' },
+  { label: 'สมหญิง รักดี (somying@example.com)', value: 'u2' },
+  { label: 'วิชัย พาณิชย์ (wichai@example.com)', value: 'u3' },
+  { label: 'นภา สุขใจ (napa@example.com)', value: 'u4' },
+  { label: 'อารี มีสุข (aree@example.com)', value: 'u5' }
+]
+
+const selectedUserIds = ref<string[]>([])
+
+const memberTiers = [
+  { label: 'Bronze', value: 'bronze', description: 'สมาชิกระดับบรอนซ์' },
+  { label: 'Silver', value: 'silver', description: 'สมาชิกระดับซิลเวอร์' },
+  { label: 'Gold', value: 'gold', description: 'สมาชิกระดับโกลด์' }
+]
+
+const selectedTiers = ref<string[]>([])
 
 const isPatternModalOpen = ref(false)
 const isDeleteModalOpen = ref(false)
@@ -85,19 +141,7 @@ const draftMatchesParent = computed(
 
 const projectedTotal = computed(() => Number(totalValue.value) || 0)
 
-const totalCoupons = computed(() =>
-  patterns.value.reduce(
-    (sum, pattern) =>
-      sum + pattern.items.reduce((lineSum, item) => lineSum + item.quantity, 0),
-    0
-  )
-)
-
 const numberOfPatterns = computed(() => patterns.value.length)
-
-const patternsSumTotal = computed(() =>
-  patterns.value.reduce((sum, pattern) => sum + patternTotal(pattern), 0)
-)
 
 const hasParentValue = computed(() => Number(totalValue.value) > 0)
 const hasPatterns = computed(() => patterns.value.length > 0)
@@ -106,12 +150,67 @@ const allPatternsMatchParent = computed(() =>
   && patterns.value.every(pattern => patternTotal(pattern) === Number(totalValue.value))
 )
 
+const isFixedNoChild = computed(() => packageMode.value === 'fixed_no_child')
+const isWithChild = computed(() => packageMode.value === 'with_child')
+
+const patternsReady = computed(() => {
+  if (isFixedNoChild.value) {
+    return true
+  }
+
+  return hasPatterns.value && allPatternsMatchParent.value
+})
+
+const hasDeliveryTarget = computed(() => {
+  if (!deliveryMode.value) {
+    return false
+  }
+
+  if (deliveryMode.value === 'everyone') {
+    return true
+  }
+
+  if (deliveryMode.value === 'selected') {
+    return selectedUserIds.value.length > 0
+  }
+
+  return selectedTiers.value.length > 0
+})
+
+const deliverySummary = computed(() => {
+  if (deliveryMode.value === 'everyone') {
+    return 'ส่งให้ทุกคนในระบบ'
+  }
+
+  if (deliveryMode.value === 'selected') {
+    return `ส่งเฉพาะ ${selectedUserIds.value.length} คนที่เลือก`
+  }
+
+  if (deliveryMode.value === 'member_tier') {
+    const labels = memberTiers
+      .filter(tier => selectedTiers.value.includes(tier.value))
+      .map(tier => tier.label)
+
+    return labels.length
+      ? `ส่งให้เมมเบอร์: ${labels.join(', ')}`
+      : 'ยังไม่ได้เลือกระดับสมาชิก'
+  }
+
+  return 'ยังไม่ได้เลือกวิธีส่ง'
+})
+
+const packageModeSummary = computed(() =>
+  isFixedNoChild.value
+    ? `Fixed ${formatNumber(projectedTotal.value)} THB — ไม่มี Child (ลูกค้าแบ่งเอง)`
+    : 'มี Child Patterns ให้ลูกค้าเลือก'
+)
+
 const canSavePackage = computed(
   () =>
     !!packageName.value.trim()
     && hasParentValue.value
-    && hasPatterns.value
-    && allPatternsMatchParent.value
+    && patternsReady.value
+    && hasDeliveryTarget.value
 )
 
 const isEditingPattern = computed(() => editingPatternId.value !== null)
@@ -235,7 +334,7 @@ const columns: TableColumn<ChildPattern>[] = [
 ]
 
 function resetDraft() {
-  draftName.value = `Pattern ${patterns.value.length + 1}`
+  draftName.value = `รูปแบบที่ ${patterns.value.length + 1}`
   draftItems.value = [{ couponValue: 100, quantity: 1 }]
   editingPatternId.value = null
 }
@@ -360,6 +459,26 @@ function confirmDeletePattern() {
   closeDeleteModal()
 }
 
+function onPackageModeChange(mode?: PackageMode) {
+  if (mode === 'fixed_no_child') {
+    description.value
+      = 'ส่งมูลค่าคงที่ให้ลูกค้า — ลูกค้าเลือกแบ่งคูปองเองทีหลัง (ไม่สร้าง Child Pattern)'
+  } else {
+    description.value
+      = 'สิทธิ์รวม — ลูกค้าเลือกแบ่งเป็น Child Pattern ตามที่แอดมินกำหนดไว้'
+  }
+}
+
+function onDeliveryModeChange(mode?: DeliveryMode) {
+  if (mode !== 'selected') {
+    selectedUserIds.value = []
+  }
+
+  if (mode !== 'member_tier') {
+    selectedTiers.value = []
+  }
+}
+
 function cancelPackage() {
   toast.add({
     title: 'Cancelled',
@@ -373,7 +492,9 @@ function savePackage() {
   if (!canSavePackage.value) {
     toast.add({
       title: 'Cannot save package',
-      description: 'Complete all workflow checklist items first.',
+      description: isFixedNoChild.value
+        ? 'กรุณาตั้งมูลค่า Fixed และวิธีส่ง Gift Card ให้ครบ'
+        : 'กรุณาตั้ง Parent, Child Patterns และวิธีส่ง Gift Card ให้ครบ',
       color: 'warning',
       icon: 'i-lucide-alert-triangle'
     })
@@ -381,10 +502,10 @@ function savePackage() {
   }
 
   toast.add({
-    title: 'Package saved',
-    description: `${packageName.value} saved successfully.`,
+    title: 'Package saved & Gift Card queued',
+    description: `${packageName.value} — ${packageModeSummary.value} | ${deliverySummary.value} (demo mock)`,
     color: 'success',
-    icon: 'i-lucide-check'
+    icon: 'i-lucide-gift'
   })
 }
 </script>
@@ -392,13 +513,13 @@ function savePackage() {
 <template>
   <div class="flex min-h-screen bg-default">
     <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-50 hidden w-[260px] flex-col bg-inverted text-inverted lg:flex">
+    <aside class="fixed inset-y-0 left-0 z-50 hidden w-[260px] flex-col bg-[#1A1A1A] text-white lg:flex">
       <div class="px-4 py-8">
         <h1 class="text-xl font-bold tracking-tight">
-          COUPON SYSTEM
+          THE MALL
         </h1>
-        <p class="mt-1 text-xs uppercase tracking-widest text-inverted/60">
-          Management Console
+        <p class="mt-1 text-xs uppercase tracking-widest text-white/50">
+          Coupon Manager
         </p>
       </div>
 
@@ -413,7 +534,7 @@ function savePackage() {
           class="justify-start"
           :ui="item.active
             ? undefined
-            : { base: 'text-inverted/70 hover:bg-white/10 hover:text-inverted' }"
+            : { base: 'text-white/70 hover:bg-white/10 hover:text-white' }"
         />
       </nav>
 
@@ -424,7 +545,7 @@ function savePackage() {
           color="neutral"
           variant="ghost"
           class="w-full justify-start"
-          :ui="{ base: 'text-inverted/70 hover:bg-white/10 hover:text-inverted' }"
+          :ui="{ base: 'text-white/70 hover:bg-white/10 hover:text-white' }"
         />
 
         <USeparator class="opacity-20" />
@@ -439,7 +560,7 @@ function savePackage() {
             <p class="truncate text-sm font-semibold">
               Admin
             </p>
-            <p class="truncate text-xs text-inverted/60">
+            <p class="truncate text-xs text-white/50">
               admin@example.com
             </p>
           </div>
@@ -484,8 +605,8 @@ function savePackage() {
             @click="cancelPackage"
           />
           <UButton
-            label="Save Package"
-            icon="i-lucide-save"
+            label="Save & Send Gift Card"
+            icon="i-lucide-gift"
             color="primary"
             :disabled="!canSavePackage"
             @click="savePackage"
@@ -498,17 +619,57 @@ function savePackage() {
         <section>
           <div class="flex flex-wrap items-center gap-2">
             <h2 class="text-3xl font-bold tracking-tight text-primary sm:text-4xl">
-              Create Coupon Package (Parent)
+              4.2 Create Coupon Package
             </h2>
-            <UBadge
-              label="MVP"
+          </div>
+          <p class="mt-2 max-w-3xl text-muted">
+            เลือกโหมดส่งได้ 2 แบบ: (1) มี Child Patterns ให้ลูกค้าเลือกตามที่แอดมินตั้งไว้
+            หรือ (2) ส่งมูลค่า Fixed ไปเลย แล้วให้ลูกค้าไปเลือกแบ่งเองทีหลัง
+          </p>
+        </section>
+
+        <!-- Package mode -->
+        <section>
+          <UCard>
+            <template #header>
+              <div class="flex items-center gap-2 text-primary">
+                <UIcon
+                  name="i-lucide-layers"
+                  class="size-5"
+                />
+                <h3 class="text-lg font-bold">
+                  โหมดการส่งแพ็กเกจ
+                </h3>
+              </div>
+            </template>
+
+            <URadioGroup
+              v-model="packageMode"
+              :items="packageModeOptions"
+              value-key="value"
+              class="gap-3"
+              @update:model-value="onPackageModeChange"
+            />
+
+            <UAlert
+              v-if="isFixedNoChild"
+              class="mt-4"
+              color="warning"
+              variant="subtle"
+              icon="i-lucide-sparkles"
+              title="โหมด Fixed — ไม่สร้าง Child Pattern"
+              :description="`จะส่งสิทธิ์ ${formatNumber(projectedTotal)} บาท ให้ลูกค้าโดยตรง ลูกค้าเลือกแบ่งเองทีหลัง (ไม่ต้องตั้งรูปแบบด้านล่าง)`"
+            />
+            <UAlert
+              v-else
+              class="mt-4"
               color="primary"
               variant="subtle"
+              icon="i-lucide-git-branch"
+              title="โหมด Parent-Child"
+              description="ต้องสร้าง Child Patterns ให้ครบ และทุกรูปแบบต้องรวมมูลค่าเท่ากับ Parent"
             />
-          </div>
-          <p class="mt-2 text-muted">
-            Define the primary package details and its associated coupon patterns.
-          </p>
+          </UCard>
         </section>
 
         <!-- Bento grid -->
@@ -542,7 +703,7 @@ function savePackage() {
                 </UFormField>
 
                 <UFormField
-                  label="Total Value (THB)"
+                  label="มูลค่ารวม Parent (THB)"
                   class="w-full"
                 >
                   <UInput
@@ -573,34 +734,29 @@ function savePackage() {
               </div>
             </UCard>
 
-            <UCard class="overflow-hidden bg-primary text-inverted">
+            <UCard class="overflow-hidden bg-[#1A1A1A] text-white">
               <div class="relative">
-                <p class="mb-1 text-xs uppercase tracking-wider opacity-80">
-                  Projected Total
+                <p class="mb-1 text-xs uppercase tracking-wider text-white/60">
+                  {{ isFixedNoChild ? 'Fixed Value' : 'Projected Total' }}
                 </p>
                 <div class="flex items-baseline gap-2">
-                  <span class="text-4xl font-bold tracking-tight">
-                    {{ formatNumber(projectedTotal) }}
+                  <span class="text-4xl font-bold tracking-tight text-primary">
+                    ฿{{ formatNumber(projectedTotal) }}
                   </span>
-                  <span class="text-base">THB</span>
                 </div>
 
                 <USeparator class="my-4 opacity-20" />
 
                 <div class="space-y-2">
                   <div class="flex items-center justify-between">
-                    <span class="opacity-90">Total Coupons</span>
-                    <span class="text-xl font-bold">{{ totalCoupons }}</span>
-                  </div>
-                  <div class="flex items-center justify-between">
-                    <span class="opacity-90">Number of Patterns</span>
+                    <span class="text-white/80">Number of Patterns</span>
                     <span class="text-xl font-bold">{{ numberOfPatterns }}</span>
                   </div>
                 </div>
 
                 <UIcon
                   name="i-lucide-ticket"
-                  class="pointer-events-none absolute -right-2 -bottom-2 size-24 opacity-10"
+                  class="pointer-events-none absolute -right-2 -bottom-2 size-24 text-primary opacity-20"
                 />
               </div>
             </UCard>
@@ -626,27 +782,55 @@ function savePackage() {
                     class="mt-0.5 size-5 shrink-0"
                   />
                   <span :class="hasParentValue ? 'text-default' : 'text-muted'">
-                    Parent Value exists
+                    {{ isFixedNoChild ? 'มีมูลค่า Fixed ที่จะส่ง' : 'มีมูลค่า Parent (สิทธิ์รวม)' }}
                   </span>
                 </li>
-                <li class="flex items-start gap-3">
+                <li
+                  v-if="isWithChild"
+                  class="flex items-start gap-3"
+                >
                   <UIcon
                     :name="hasPatterns ? 'i-lucide-check-circle-2' : 'i-lucide-circle'"
                     :class="hasPatterns ? 'text-success' : 'text-muted'"
                     class="mt-0.5 size-5 shrink-0"
                   />
                   <span :class="hasPatterns ? 'text-default' : 'text-muted'">
-                    At least one Pattern
+                    มี Child Pattern อย่างน้อย 1 รูปแบบ
                   </span>
                 </li>
-                <li class="flex items-start gap-3">
+                <li
+                  v-if="isWithChild"
+                  class="flex items-start gap-3"
+                >
                   <UIcon
                     :name="allPatternsMatchParent ? 'i-lucide-check-circle-2' : 'i-lucide-circle'"
                     :class="allPatternsMatchParent ? 'text-success' : 'text-muted'"
                     class="mt-0.5 size-5 shrink-0"
                   />
                   <span :class="allPatternsMatchParent ? 'text-default' : 'text-muted'">
-                    Every Pattern Total equals Parent Total
+                    ทุกรูปแบบรวมมูลค่าเท่ากับ Parent
+                  </span>
+                </li>
+                <li
+                  v-else
+                  class="flex items-start gap-3"
+                >
+                  <UIcon
+                    name="i-lucide-check-circle-2"
+                    class="mt-0.5 size-5 shrink-0 text-success"
+                  />
+                  <span>
+                    ข้าม Child Patterns (ลูกค้าแบ่งเองทีหลัง)
+                  </span>
+                </li>
+                <li class="flex items-start gap-3">
+                  <UIcon
+                    :name="hasDeliveryTarget ? 'i-lucide-check-circle-2' : 'i-lucide-circle'"
+                    :class="hasDeliveryTarget ? 'text-success' : 'text-muted'"
+                    class="mt-0.5 size-5 shrink-0"
+                  />
+                  <span :class="hasDeliveryTarget ? 'text-default' : 'text-muted'">
+                    เลือกวิธีส่ง Gift Card แล้ว
                   </span>
                 </li>
               </ul>
@@ -658,7 +842,9 @@ function savePackage() {
                 variant="subtle"
                 icon="i-lucide-alert-triangle"
                 title="Save disabled"
-                description="Fix checklist items before saving the package."
+                :description="isFixedNoChild
+                  ? 'ตั้งมูลค่า Fixed และวิธีส่ง Gift Card ให้ครบก่อนบันทึก'
+                  : 'ตั้งค่า Parent, Child Patterns และวิธีส่ง Gift Card ให้ครบก่อนบันทึก'"
               />
               <UAlert
                 v-else
@@ -667,7 +853,7 @@ function savePackage() {
                 variant="subtle"
                 icon="i-lucide-check"
                 title="Ready to save"
-                description="All workflow checks passed."
+                :description="`${packageModeSummary} | ${deliverySummary}`"
               />
             </UCard>
           </div>
@@ -675,6 +861,7 @@ function savePackage() {
           <!-- Right column -->
           <div class="col-span-12 lg:col-span-8">
             <UCard
+              v-if="isWithChild"
               :ui="{
                 body: 'p-0 sm:p-0',
                 header: 'bg-elevated',
@@ -690,7 +877,7 @@ function savePackage() {
                       class="size-5"
                     />
                     <h3 class="text-lg font-bold">
-                      Child Patterns
+                      Child Patterns (รูปแบบการแบ่งคูปอง)
                     </h3>
                     <UBadge
                       :label="`${patterns.length}`"
@@ -719,30 +906,241 @@ function savePackage() {
               <template #footer>
                 <div class="flex flex-wrap items-center justify-between gap-3">
                   <p class="font-semibold text-muted">
-                    Total Package Value Calculation
+                    สถานะ Child Patterns
                   </p>
-                  <div class="flex items-center gap-2">
-                    <span class="text-xs uppercase tracking-wider text-muted">
-                      Sum Total:
-                    </span>
-                    <span class="text-xl font-bold text-primary">
-                      {{ formatNumber(patternsSumTotal) }} บาท
-                    </span>
-                    <UKbd value="THB" />
+                  <div class="flex flex-wrap items-center gap-2">
+                    <UBadge
+                      :label="`${numberOfPatterns} รูปแบบ`"
+                      color="neutral"
+                      variant="subtle"
+                    />
+                    <UBadge
+                      v-if="!hasPatterns"
+                      label="ยังไม่มีรูปแบบ"
+                      color="warning"
+                      variant="subtle"
+                      icon="i-lucide-alert-triangle"
+                    />
+                    <UBadge
+                      v-else-if="allPatternsMatchParent"
+                      :label="`ทุกอันเท่า Parent ${formatNumber(projectedTotal)}`"
+                      color="success"
+                      variant="subtle"
+                      icon="i-lucide-check"
+                    />
+                    <UBadge
+                      v-else
+                      label="ยังมีรูปแบบที่มูลค่าไม่เท่า Parent"
+                      color="warning"
+                      variant="subtle"
+                      icon="i-lucide-alert-triangle"
+                    />
                   </div>
                 </div>
               </template>
             </UCard>
+
+            <UCard
+              v-else
+              class="h-full"
+            >
+              <template #header>
+                <div class="flex items-center gap-2 text-primary">
+                  <UIcon
+                    name="i-lucide-banknote"
+                    class="size-5"
+                  />
+                  <h3 class="text-lg font-bold">
+                    Fixed Value Delivery (ไม่มี Child)
+                  </h3>
+                  <UBadge
+                    label="Optional mode"
+                    color="warning"
+                    variant="subtle"
+                  />
+                </div>
+              </template>
+
+              <div class="space-y-6">
+                <p class="text-muted">
+                  โหมดนี้ไม่ต้องสร้าง Child Patterns — ส่งมูลค่าคงที่ไปให้ลูกค้า
+                  แล้วให้ลูกค้าเลือกแบ่งคูปองเองทีหลังในแอป
+                </p>
+
+                <div class="rounded-lg bg-[#1A1A1A] p-6 text-white">
+                  <p class="text-xs uppercase tracking-wider text-white/60">
+                    มูลค่าที่จะส่งให้ลูกค้า
+                  </p>
+                  <div class="mt-2 flex items-baseline gap-2">
+                    <span class="text-4xl font-bold text-primary">
+                      ฿{{ formatNumber(projectedTotal) }}
+                    </span>
+                  </div>
+                  <USeparator class="my-4 opacity-20" />
+                  <p class="text-sm text-white/80">
+                    ตัวอย่าง: ส่งบัตร 1,000 บาท → ลูกค้าไปเลือกว่าจะแบ่งเป็น 1×1000, 2×500 หรือผสมเอง
+                  </p>
+                </div>
+
+                <UAlert
+                  color="neutral"
+                  variant="subtle"
+                  icon="i-lucide-info"
+                  title="ขอบเขต Demo"
+                  description="หน้าจอให้ลูกค้าเลือกแบ่งเองยังไม่ทำใน MVP นี้ — โหมดนี้แสดงเฉพาะฝั่งแอดมินว่าส่ง Fixed ได้โดยไม่ต้องตั้ง Pattern"
+                />
+              </div>
+            </UCard>
           </div>
         </section>
 
-        <UAlert
-          color="primary"
-          variant="subtle"
-          icon="i-lucide-lightbulb"
-          title="Workflow Tip"
-          description="Each child pattern total must equal the Parent Package total value. Save stays disabled until every checklist item passes."
-        />
+        <!-- Send Gift Card -->
+        <section>
+          <UCard>
+            <template #header>
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-primary">
+                  <UIcon
+                    name="i-lucide-gift"
+                    class="size-5"
+                  />
+                  <h3 class="text-lg font-bold">
+                    ส่งมอบ Gift Card
+                  </h3>
+                  <UBadge
+                    label="Delivery"
+                    color="primary"
+                    variant="subtle"
+                  />
+                </div>
+                <UBadge
+                  v-if="deliveryMode"
+                  :label="deliverySummary"
+                  color="success"
+                  variant="subtle"
+                />
+              </div>
+            </template>
+
+            <div class="space-y-6">
+              <p class="text-sm text-muted">
+                เลือกวิธีส่งมอบแพ็กเกจคูปองให้ผู้รับ (demo — ไม่เชื่อมหลังบ้าน)
+              </p>
+
+              <URadioGroup
+                v-model="deliveryMode"
+                :items="deliveryOptions"
+                value-key="value"
+                class="gap-3"
+                @update:model-value="onDeliveryModeChange"
+              />
+
+              <div
+                v-if="deliveryMode === 'everyone'"
+                class="rounded-lg border border-default bg-elevated p-4"
+              >
+                <div class="flex items-start gap-3">
+                  <UIcon
+                    name="i-lucide-users"
+                    class="mt-0.5 size-5 text-primary"
+                  />
+                  <div>
+                    <p class="font-semibold">
+                      ส่งทุกคน
+                    </p>
+                    <p class="mt-1 text-sm text-muted">
+                      Gift Card จะถูกมอบให้ผู้ใช้งานทั้งหมดในระบบทันทีหลังบันทึกแพ็กเกจ
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-else-if="deliveryMode === 'selected'"
+                class="space-y-3"
+              >
+                <UFormField
+                  label="เลือกผู้รับ"
+                  description="ค้นหาและเลือกได้หลายคน"
+                  class="w-full"
+                >
+                  <USelectMenu
+                    v-model="selectedUserIds"
+                    :items="mockUsers"
+                    multiple
+                    placeholder="เลือกผู้ใช้งาน..."
+                    class="w-full"
+                    value-key="value"
+                  />
+                </UFormField>
+
+                <UAlert
+                  v-if="selectedUserIds.length === 0"
+                  color="warning"
+                  variant="subtle"
+                  icon="i-lucide-alert-triangle"
+                  title="ยังไม่ได้เลือกผู้รับ"
+                  description="ต้องเลือกอย่างน้อย 1 คนก่อนบันทึก"
+                />
+                <UAlert
+                  v-else
+                  color="success"
+                  variant="subtle"
+                  icon="i-lucide-check"
+                  :title="`เลือกแล้ว ${selectedUserIds.length} คน`"
+                  description="จะส่ง Gift Card เฉพาะรายชื่อที่เลือก"
+                />
+              </div>
+
+              <div
+                v-else-if="deliveryMode === 'member_tier'"
+                class="space-y-3"
+              >
+                <UFormField
+                  label="ระดับสมาชิก"
+                  description="เลือกอย่างน้อย 1 ระดับ"
+                  class="w-full"
+                >
+                  <UCheckboxGroup
+                    v-model="selectedTiers"
+                    :items="memberTiers"
+                    value-key="value"
+                    class="gap-3"
+                  />
+                </UFormField>
+
+                <div class="flex flex-wrap gap-2">
+                  <UBadge
+                    v-for="tier in memberTiers.filter(t => selectedTiers.includes(t.value))"
+                    :key="tier.value"
+                    :label="tier.label"
+                    color="primary"
+                    variant="subtle"
+                    icon="i-lucide-award"
+                  />
+                </div>
+
+                <UAlert
+                  v-if="selectedTiers.length === 0"
+                  color="warning"
+                  variant="subtle"
+                  icon="i-lucide-alert-triangle"
+                  title="ยังไม่ได้เลือกระดับ"
+                  description="เลือก Bronze, Silver หรือ Gold อย่างน้อย 1 ระดับ"
+                />
+                <UAlert
+                  v-else
+                  color="success"
+                  variant="subtle"
+                  icon="i-lucide-check"
+                  title="พร้อมส่งตามระดับสมาชิก"
+                  :description="deliverySummary"
+                />
+              </div>
+            </div>
+          </UCard>
+        </section>
+
       </UContainer>
     </div>
 
