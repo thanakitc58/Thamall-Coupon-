@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { h, resolveComponent } from 'vue'
-import type { TableColumn } from '@nuxt/ui'
-
 type PatternItem = {
   couponValue: number
   quantity: number
@@ -219,120 +216,6 @@ const deleteTarget = computed(() =>
   patterns.value.find(pattern => pattern.id === deleteTargetId.value) ?? null
 )
 
-const UButton = resolveComponent('UButton')
-const UIcon = resolveComponent('UIcon')
-
-const columns: TableColumn<ChildPattern>[] = [
-  {
-    accessorKey: 'name',
-    header: 'Pattern Name',
-    cell: ({ row }) => {
-      const pattern = row.original
-
-      return h('div', { class: 'flex items-center gap-3' }, [
-        h(
-          'div',
-          {
-            class:
-              'flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary'
-          },
-          [h(UIcon, { name: 'i-lucide-ticket', class: 'size-5' })]
-        ),
-        h('div', undefined, [
-          h('p', { class: 'font-semibold text-primary' }, pattern.name),
-          h(
-            'p',
-            { class: 'text-xs text-muted' },
-            `${pattern.items.length} item${pattern.items.length === 1 ? '' : 's'}`
-          )
-        ])
-      ])
-    }
-  },
-  {
-    accessorKey: 'couponValue',
-    header: () => h('div', { class: 'text-right' }, 'Coupon Value'),
-    cell: ({ row }) => {
-      const items = row.original.items
-
-      return h(
-        'div',
-        { class: 'text-right font-semibold space-y-0.5' },
-        items.map((item, index) =>
-          h(
-            'p',
-            { class: index > 0 ? 'text-xs text-muted' : undefined },
-            formatNumber(item.couponValue)
-          )
-        )
-      )
-    }
-  },
-  {
-    accessorKey: 'quantity',
-    header: () => h('div', { class: 'text-center' }, 'Quantity'),
-    cell: ({ row }) => {
-      const items = row.original.items
-
-      return h(
-        'div',
-        { class: 'text-center space-y-0.5' },
-        items.map((item, index) =>
-          h(
-            'p',
-            { class: index > 0 ? 'text-xs text-muted' : undefined },
-            String(item.quantity)
-          )
-        )
-      )
-    }
-  },
-  {
-    accessorKey: 'total',
-    header: () => h('div', { class: 'text-right' }, 'Total'),
-    cell: ({ row }) => {
-      const pattern = row.original
-      const matches = patternTotal(pattern) === Number(totalValue.value)
-
-      return h('div', { class: 'text-right space-y-1' }, [
-        h(
-          'p',
-          { class: matches ? 'font-bold text-success' : 'font-bold text-warning' },
-          formatNumber(patternTotal(pattern))
-        ),
-        ...pattern.items.map(item =>
-          h(
-            'p',
-            { class: 'text-xs text-muted' },
-            formatNumber(itemTotal(item))
-          )
-        )
-      ])
-    }
-  },
-  {
-    id: 'actions',
-    header: () => h('div', { class: 'text-center' }, 'Actions'),
-    cell: ({ row }) =>
-      h('div', { class: 'flex justify-center gap-1' }, [
-        h(UButton, {
-          icon: 'i-lucide-pencil',
-          color: 'neutral',
-          variant: 'ghost',
-          size: 'sm',
-          onClick: () => openEditPattern(row.original)
-        }),
-        h(UButton, {
-          icon: 'i-lucide-trash-2',
-          color: 'error',
-          variant: 'ghost',
-          size: 'sm',
-          onClick: () => openDeletePattern(row.original.id)
-        })
-      ])
-  }
-]
-
 function resetDraft() {
   draftName.value = `รูปแบบที่ ${patterns.value.length + 1}`
   draftItems.value = [{ couponValue: 100, quantity: 1 }]
@@ -374,7 +257,7 @@ function closePatternModal() {
 function savePattern() {
   if (!draftName.value.trim()) {
     toast.add({
-      title: 'Pattern name required',
+      title: 'ต้องระบุชื่อรูปแบบ',
       color: 'warning',
       icon: 'i-lucide-alert-triangle'
     })
@@ -383,8 +266,8 @@ function savePattern() {
 
   if (draftItems.value.some(item => !item.quantity || item.quantity < 1)) {
     toast.add({
-      title: 'Invalid quantity',
-      description: 'Each row needs a quantity of at least 1.',
+      title: 'จำนวนไม่ถูกต้อง',
+      description: 'แต่ละแถวต้องมีจำนวนอย่างน้อย 1 ใบ',
       color: 'warning',
       icon: 'i-lucide-alert-triangle'
     })
@@ -410,8 +293,8 @@ function savePattern() {
     }
 
     toast.add({
-      title: 'Pattern updated',
-      description: `${payload.name} was updated.`,
+      title: 'อัปเดตรูปแบบแล้ว',
+      description: `อัปเดต ${payload.name} เรียบร้อย`,
       color: 'success',
       icon: 'i-lucide-check'
     })
@@ -419,8 +302,8 @@ function savePattern() {
     patterns.value.push(payload)
 
     toast.add({
-      title: 'Pattern added',
-      description: `${payload.name} was added to the package.`,
+      title: 'เพิ่มรูปแบบแล้ว',
+      description: `เพิ่ม ${payload.name} เข้าแพ็กเกจแล้ว`,
       color: 'success',
       icon: 'i-lucide-plus'
     })
@@ -450,8 +333,8 @@ function confirmDeletePattern() {
   patterns.value = patterns.value.filter(pattern => pattern.id !== target.id)
 
   toast.add({
-    title: 'Pattern removed',
-    description: `${target.name} was removed.`,
+    title: 'ลบรูปแบบแล้ว',
+    description: `ลบ ${target.name} ออกแล้ว`,
     color: 'warning',
     icon: 'i-lucide-trash-2'
   })
@@ -887,7 +770,7 @@ function savePackage() {
                   </div>
 
                   <UButton
-                    label="Add Pattern"
+                    label="เพิ่มรูปแบบ"
                     icon="i-lucide-plus"
                     color="primary"
                     @click="openAddPattern"
@@ -895,11 +778,80 @@ function savePackage() {
                 </div>
               </template>
 
-              <div class="p-4 sm:p-6">
-                <UTable
-                  :data="patterns"
-                  :columns="columns"
-                  class="w-full"
+              <div class="space-y-3 p-4 sm:p-6">
+                <article
+                  v-for="pattern in patterns"
+                  :key="pattern.id"
+                  class="flex items-stretch gap-2 sm:gap-3"
+                >
+                  <div
+                    class="flex shrink-0 items-center text-muted"
+                    aria-hidden="true"
+                  >
+                    <UIcon
+                      name="i-lucide-grip-vertical"
+                      class="size-5"
+                    />
+                  </div>
+
+                  <div class="min-w-0 flex-1 overflow-hidden rounded-xl border border-accented bg-elevated shadow-sm">
+                    <header class="flex flex-wrap items-center justify-between gap-2 border-b border-accented bg-accented px-4 py-3">
+                      <h4 class="font-semibold text-highlighted">
+                        {{ pattern.name }}
+                      </h4>
+                      <p class="text-sm font-semibold text-toned">
+                        รวมมูลค่า {{ formatNumber(patternTotal(pattern)) }} บาท
+                      </p>
+                    </header>
+
+                    <div class="bg-elevated px-4 py-2">
+                      <div class="grid grid-cols-3 gap-3 py-2 text-xs font-medium text-toned">
+                        <span>มูลค่าคูปอง (บาท)</span>
+                        <span>จำนวน (ใบ)</span>
+                        <span>รวม (บาท)</span>
+                      </div>
+
+                      <div
+                        v-for="(item, itemIndex) in pattern.items"
+                        :key="`${pattern.id}-${itemIndex}`"
+                        class="grid grid-cols-3 gap-3 border-t border-default py-2.5 text-sm font-medium text-highlighted"
+                      >
+                        <span>{{ formatNumber(item.couponValue) }}</span>
+                        <span>{{ item.quantity }}</span>
+                        <span>{{ formatNumber(itemTotal(item)) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex shrink-0 items-center gap-2">
+                    <UButton
+                      icon="i-lucide-pencil"
+                      color="info"
+                      variant="outline"
+                      size="sm"
+                      square
+                      aria-label="แก้ไขรูปแบบ"
+                      @click="openEditPattern(pattern)"
+                    />
+                    <UButton
+                      icon="i-lucide-trash-2"
+                      color="error"
+                      variant="outline"
+                      size="sm"
+                      square
+                      aria-label="ลบรูปแบบ"
+                      @click="openDeletePattern(pattern.id)"
+                    />
+                  </div>
+                </article>
+
+                <UAlert
+                  v-if="patterns.length === 0"
+                  color="warning"
+                  variant="subtle"
+                  icon="i-lucide-alert-triangle"
+                  title="ยังไม่มีรูปแบบ"
+                  description="กดปุ่มเพิ่มรูปแบบเพื่อสร้าง Child Pattern อย่างน้อย 1 รายการ"
                 />
               </div>
 
@@ -1146,18 +1098,18 @@ function savePackage() {
     <!-- Add / Edit Pattern Modal -->
     <UModal
       v-model:open="isPatternModalOpen"
-      :title="isEditingPattern ? 'Edit Pattern' : 'Add Pattern'"
-      description="Build coupon rows so the pattern total matches the parent value."
+      :title="isEditingPattern ? 'แก้ไขรูปแบบ' : 'เพิ่มรูปแบบ'"
+      description="กำหนดแถวคูปองให้มูลค่ารวมเท่ากับมูลค่า Parent"
     >
       <template #body>
         <div class="space-y-4">
           <UFormField
-            label="Pattern Name"
+            label="ชื่อรูปแบบ"
             class="w-full"
           >
             <UInput
               v-model="draftName"
-              placeholder="e.g. Pattern 4"
+              placeholder="เช่น รูปแบบที่ 4"
               class="w-full"
             />
           </UFormField>
@@ -1167,10 +1119,10 @@ function savePackage() {
           <div class="space-y-3">
             <div class="flex items-center justify-between gap-2">
               <p class="text-sm font-semibold">
-                Coupon Rows
+                รายการคูปอง
               </p>
               <UButton
-                label="Add Row"
+                label="เพิ่มแถว"
                 icon="i-lucide-plus"
                 color="neutral"
                 variant="soft"
@@ -1185,7 +1137,7 @@ function savePackage() {
               class="grid grid-cols-12 items-end gap-3"
             >
               <UFormField
-                label="Coupon Value"
+                label="มูลค่าคูปอง (บาท)"
                 class="col-span-5"
               >
                 <USelect
@@ -1197,7 +1149,7 @@ function savePackage() {
               </UFormField>
 
               <UFormField
-                label="Quantity"
+                label="จำนวน (ใบ)"
                 class="col-span-5"
               >
                 <UInput
@@ -1226,18 +1178,18 @@ function savePackage() {
           <div class="flex flex-wrap items-center justify-between gap-3 rounded-lg bg-elevated p-4">
             <div class="space-y-1">
               <p class="text-xs uppercase tracking-wider text-muted">
-                Parent Value
+                มูลค่า Parent
               </p>
               <p class="text-lg font-bold">
-                {{ formatNumber(projectedTotal) }} THB
+                {{ formatNumber(projectedTotal) }} บาท
               </p>
             </div>
             <div class="space-y-1 text-right">
               <p class="text-xs uppercase tracking-wider text-muted">
-                Pattern Total
+                รวมมูลค่ารูปแบบ
               </p>
               <p class="text-lg font-bold">
-                {{ formatNumber(draftTotal) }} THB
+                {{ formatNumber(draftTotal) }} บาท
               </p>
             </div>
           </div>
@@ -1247,16 +1199,16 @@ function savePackage() {
             color="success"
             variant="subtle"
             icon="i-lucide-check-circle-2"
-            title="Totals match"
-            description="Pattern total equals the parent package value."
+            title="มูลค่าตรงกัน"
+            description="มูลค่ารวมของรูปแบบเท่ากับมูลค่า Parent แล้ว"
           />
           <UAlert
             v-else
             color="warning"
             variant="subtle"
             icon="i-lucide-alert-triangle"
-            title="Totals do not match"
-            :description="`Pattern total is ${formatNumber(draftTotal)} but parent value is ${formatNumber(projectedTotal)}.`"
+            title="มูลค่าไม่ตรงกัน"
+            :description="`รวมมูลค่ารูปแบบคือ ${formatNumber(draftTotal)} แต่ Parent คือ ${formatNumber(projectedTotal)}`"
           />
         </div>
       </template>
@@ -1264,13 +1216,13 @@ function savePackage() {
       <template #footer>
         <div class="flex w-full justify-end gap-2">
           <UButton
-            label="Cancel"
+            label="ยกเลิก"
             color="neutral"
             variant="ghost"
             @click="closePatternModal"
           />
           <UButton
-            :label="isEditingPattern ? 'Update Pattern' : 'Save Pattern'"
+            :label="isEditingPattern ? 'อัปเดตรูปแบบ' : 'บันทึกรูปแบบ'"
             color="primary"
             icon="i-lucide-check"
             @click="savePattern"
@@ -1282,29 +1234,29 @@ function savePackage() {
     <!-- Delete confirmation -->
     <UModal
       v-model:open="isDeleteModalOpen"
-      title="Delete Pattern"
-      description="This action cannot be undone."
+      title="ลบรูปแบบ"
+      description="การกระทำนี้ไม่สามารถย้อนกลับได้"
     >
       <template #body>
         <UAlert
           color="error"
           variant="subtle"
           icon="i-lucide-trash-2"
-          :title="deleteTarget ? `Delete ${deleteTarget.name}?` : 'Delete this pattern?'"
-          description="The pattern will be removed from the package table."
+          :title="deleteTarget ? `ลบ ${deleteTarget.name}?` : 'ลบรูปแบบนี้?'"
+          description="รูปแบบนี้จะถูกลบออกจากแพ็กเกจ"
         />
       </template>
 
       <template #footer>
         <div class="flex w-full justify-end gap-2">
           <UButton
-            label="Cancel"
+            label="ยกเลิก"
             color="neutral"
             variant="ghost"
             @click="closeDeleteModal"
           />
           <UButton
-            label="Delete"
+            label="ลบ"
             color="error"
             icon="i-lucide-trash-2"
             @click="confirmDeletePattern"
