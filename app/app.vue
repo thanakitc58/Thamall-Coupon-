@@ -9,7 +9,7 @@ useHead({
     { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
     {
       rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700;800&display=swap'
+      href: 'https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap'
     }
   ],
   htmlAttrs: {
