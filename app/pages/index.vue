@@ -13,6 +13,10 @@ type ChildPattern = {
   items: PatternItem[]
 }
 
+definePageMeta({
+  layout: 'cms'
+})
+
 const toast = useToast()
 
 const packageName = ref('Summer Package 1000')
@@ -113,15 +117,6 @@ const draftName = ref('')
 const draftItems = ref<PatternItem[]>([
   { couponValue: 100, quantity: 1 }
 ])
-
-const navItems = [
-  { label: 'Dashboard', icon: 'i-lucide-layout-dashboard' },
-  { label: 'Coupon Packages', icon: 'i-lucide-package', active: true },
-  { label: 'Coupon Assignment', icon: 'i-lucide-user-check' },
-  { label: 'Coupons', icon: 'i-lucide-ticket' },
-  { label: 'Users', icon: 'i-lucide-users' },
-  { label: 'Reports', icon: 'i-lucide-chart-column' }
-]
 
 const formatNumber = (value: number) =>
   new Intl.NumberFormat('en-US').format(value)
@@ -511,110 +506,51 @@ function savePackage() {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-default">
-    <!-- Sidebar -->
-    <aside class="fixed inset-y-0 left-0 z-50 hidden w-[260px] flex-col bg-[#1A1A1A] text-white lg:flex">
-      <div class="px-4 py-8">
-        <h1 class="text-xl font-bold tracking-tight">
-          THE MALL
-        </h1>
-        <p class="mt-1 text-xs uppercase tracking-widest text-white/50">
-          Coupon Manager
-        </p>
+  <div>
+    <header class="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-default bg-default/80 px-4 backdrop-blur-md sm:px-8">
+      <div class="flex items-center gap-2 text-sm sm:text-base">
+        <span class="font-extrabold text-primary">Coupon Manager</span>
+        <span class="text-muted">/</span>
+        <span class="text-muted">Create Coupon Package</span>
       </div>
 
-      <nav class="flex flex-1 flex-col gap-1 px-2">
-        <UButton
-          v-for="item in navItems"
-          :key="item.label"
-          :label="item.label"
-          :icon="item.icon"
-          :color="item.active ? 'primary' : 'neutral'"
-          :variant="item.active ? 'solid' : 'ghost'"
-          class="justify-start"
-          :ui="item.active
-            ? undefined
-            : { base: 'text-white/70 hover:bg-white/10 hover:text-white' }"
-        />
-      </nav>
+      <div class="flex items-center gap-2 sm:gap-4">
+        <div class="hidden items-center gap-1 sm:flex">
+          <UTooltip text="Notifications">
+            <UButton
+              icon="i-lucide-bell"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+            />
+          </UTooltip>
+          <UTooltip text="Help">
+            <UButton
+              icon="i-lucide-circle-help"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+            />
+          </UTooltip>
+        </div>
 
-      <div class="mt-auto space-y-3 px-2 pb-6">
         <UButton
-          label="Settings"
-          icon="i-lucide-settings"
+          label="Cancel"
           color="neutral"
           variant="ghost"
-          class="w-full justify-start"
-          :ui="{ base: 'text-white/70 hover:bg-white/10 hover:text-white' }"
+          @click="cancelPackage"
         />
-
-        <USeparator class="opacity-20" />
-
-        <div class="flex items-center gap-3 px-2">
-          <UAvatar
-            src="https://api.dicebear.com/9.x/avataaars/svg?seed=Admin"
-            alt="Admin avatar"
-            size="md"
-          />
-          <div class="min-w-0">
-            <p class="truncate text-sm font-semibold">
-              Admin
-            </p>
-            <p class="truncate text-xs text-white/50">
-              admin@example.com
-            </p>
-          </div>
-        </div>
+        <UButton
+          label="Save & Send Gift Card"
+          icon="i-lucide-gift"
+          color="primary"
+          :disabled="!canSavePackage"
+          @click="savePackage"
+        />
       </div>
-    </aside>
+    </header>
 
-    <!-- Main -->
-    <div class="flex min-h-screen flex-1 flex-col lg:ml-[260px]">
-      <!-- Top bar -->
-      <header class="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-default bg-default/80 px-4 backdrop-blur-md sm:px-8">
-        <div class="flex items-center gap-2 text-sm sm:text-base">
-          <span class="font-extrabold text-primary">Coupon Manager</span>
-          <span class="text-muted">/</span>
-          <span class="text-muted">Create Coupon Package</span>
-        </div>
-
-        <div class="flex items-center gap-2 sm:gap-4">
-          <div class="hidden items-center gap-1 sm:flex">
-            <UTooltip text="Notifications">
-              <UButton
-                icon="i-lucide-bell"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-              />
-            </UTooltip>
-            <UTooltip text="Help">
-              <UButton
-                icon="i-lucide-circle-help"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-              />
-            </UTooltip>
-          </div>
-
-          <UButton
-            label="Cancel"
-            color="neutral"
-            variant="ghost"
-            @click="cancelPackage"
-          />
-          <UButton
-            label="Save & Send Gift Card"
-            icon="i-lucide-gift"
-            color="primary"
-            :disabled="!canSavePackage"
-            @click="savePackage"
-          />
-        </div>
-      </header>
-
-      <UContainer class="max-w-7xl space-y-8 py-8">
+    <UContainer class="max-w-7xl space-y-8 py-8">
         <!-- Page header -->
         <section>
           <div class="flex flex-wrap items-center gap-2">
@@ -1141,7 +1077,6 @@ function savePackage() {
           </UCard>
         </section>
       </UContainer>
-    </div>
 
     <!-- Add / Edit Pattern Modal -->
     <UModal
