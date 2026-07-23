@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Coupon Package - Admin Console</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Hanken+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@100..900&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary": "#ffffff",
+                        "surface": "#f7f9fb",
+                        "secondary": "#565e74",
+                        "inverse-surface": "#2d3133",
+                        "on-surface-variant": "#3c4a3f",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-fixed": "#d3e4fe",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary-container": "#dae2fd",
+                        "on-secondary-container": "#5c647a",
+                        "on-primary-container": "#005b32",
+                        "surface-tint": "#006d3e",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container": "#eceef0",
+                        "error-container": "#ffdad6",
+                        "background": "#f7f9fb",
+                        "primary": "#006d3e",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-primary-fixed": "#00210f",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed": "#59ffa4",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-secondary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-container-low": "#f2f4f6",
+                        "outline-variant": "#bacbbc",
+                        "on-error": "#ffffff",
+                        "on-background": "#191c1e",
+                        "surface-variant": "#e0e3e5",
+                        "outline": "#6b7b6e",
+                        "on-surface": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-container": "#3f4f65",
+                        "primary-fixed-dim": "#1ce388",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#505f76",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "primary-container": "#00dc82",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#1ce388",
+                        "tertiary-container": "#b1c1db",
+                        "on-primary-fixed-variant": "#00522d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "16px",
+                        "sm": "8px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Hanken Grotesk"],
+                        "headline-xl": ["Hanken Grotesk"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        
+        /* Modern Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .form-input-focus:focus {
+            border-color: #00dc82;
+            box-shadow: 0 0 0 2px rgba(0, 220, 130, 0.2);
+            outline: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- Sidebar Navigation -->
+<aside class="docked h-screen w-[260px] left-0 top-0 fixed bg-inverse-surface dark:bg-surface-container-lowest border-r border-outline-variant flex flex-col py-xl shadow-sm z-50">
+<div class="px-md mb-xl">
+<h1 class="text-headline-md font-headline-md font-bold text-on-primary tracking-tight">COUPON SYSTEM</h1>
+<p class="text-label-sm font-label-sm text-on-primary/60 opacity-80 uppercase tracking-widest mt-base">Management Console</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="text-on-surface-variant hover:text-on-primary hover:bg-surface-variant/10 rounded-lg flex items-center gap-md px-md py-sm mx-sm transition-colors group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md">Dashboard</span>
+</a>
+<a class="bg-primary text-on-primary rounded-lg flex items-center gap-md px-md py-sm mx-sm scale-[0.98] transition-transform duration-200" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md">Coupon Packages</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-primary hover:bg-surface-variant/10 rounded-lg flex items-center gap-md px-md py-sm mx-sm transition-colors group" href="#">
+<span class="material-symbols-outlined">assignment_ind</span>
+<span class="font-body-md">Coupon Assignment</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-primary hover:bg-surface-variant/10 rounded-lg flex items-center gap-md px-md py-sm mx-sm transition-colors group" href="#">
+<span class="material-symbols-outlined">confirmation_number</span>
+<span class="font-body-md">Coupons</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-primary hover:bg-surface-variant/10 rounded-lg flex items-center gap-md px-md py-sm mx-sm transition-colors group" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md">Users</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-primary hover:bg-surface-variant/10 rounded-lg flex items-center gap-md px-md py-sm mx-sm transition-colors group" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-body-md">Reports</span>
+</a>
+</nav>
+<div class="mt-auto px-sm">
+<a class="text-on-surface-variant hover:text-on-primary hover:bg-surface-variant/10 rounded-lg flex items-center gap-md px-md py-sm transition-colors group" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Settings</span>
+</a>
+<div class="mt-md pt-md border-t border-outline-variant/20 flex items-center gap-md px-md">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center overflow-hidden border border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a system administrator, clean corporate style, high-end photography, neutral studio background, 35mm lens, sharp focus on facial features." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFIR3eaytUAWSMz33L0BPRtvSuhOTxvJ_S5lpekqbt8aT6wPLRECiO8ECFMaI1tiHHxpHmpkgp9nAB2dNIpQZoeTQ1DDoB1q8n0BxRa02X-jLMDVnuBL9CV2eAI6GvNZNqkuguIk29_NxBTewQSfHCIi0VqOjibvQ5fNuvagvLFYdrueRCdb7NT9ZZ8fyeg64vgGu7gdvzOxblEDWYcE_6Dh3ckXPm-ZkCXA21tvT7ODR6pYiY2xyl4gKY2Fyb9emkZNWZtjtDpGg"/>
+</div>
+<div>
+<p class="font-body-md font-semibold text-on-primary">Admin</p>
+<p class="text-label-sm font-label-sm text-on-primary/60">admin@example.com</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[260px] flex-1 min-h-screen">
+<!-- Top App Bar -->
+<header class="docked full-width top-0 sticky z-40 border-b border-outline-variant bg-surface/80 backdrop-blur-md flex justify-between items-center h-16 px-margin-desktop w-full">
+<div class="flex items-center gap-md">
+<span class="text-headline-md font-headline-md font-extrabold text-primary">Coupon Manager</span>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface-variant font-body-md">Create Coupon Package</span>
+</div>
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-sm">
+<button class="p-base hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-base hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+<div class="flex items-center gap-md">
+<button class="px-md py-sm text-on-surface-variant hover:bg-surface-variant/20 rounded-lg transition-all font-semibold">Cancel</button>
+<button class="px-xl py-sm bg-primary-container text-on-primary-container hover:shadow-lg hover:brightness-105 active:scale-[0.98] rounded-lg transition-all font-bold flex items-center gap-sm">
+<span class="material-symbols-outlined">save</span>
+                        Save Package
+                    </button>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-margin-desktop space-y-xl max-w-7xl mx-auto">
+<!-- Section Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-headline-xl font-headline-xl text-primary">Create Coupon Package (Parent)</h2>
+<p class="text-on-surface-variant mt-xs">Define the primary package details and its associated coupon patterns.</p>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-lg">
+<!-- Left Column: Form Details -->
+<div class="col-span-12 lg:col-span-4 space-y-lg">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-lg space-y-md">
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined">info</span>
+<h3 class="font-headline-md font-bold">Package Info</h3>
+</div>
+<div class="space-y-md pt-sm">
+<div class="space-y-xs">
+<label class="text-label-sm font-label-sm text-secondary uppercase">Package Name</label>
+<input class="w-full bg-white border border-outline-variant rounded-lg px-md py-sm font-body-md form-input-focus transition-all" placeholder="Enter package name..." type="text" value="Summer Package 1000"/>
+</div>
+<div class="space-y-xs">
+<label class="text-label-sm font-label-sm text-secondary uppercase">Total Value (THB)</label>
+<div class="relative">
+<input class="w-full bg-white border border-outline-variant rounded-lg px-md py-sm pl-md pr-12 font-body-md form-input-focus transition-all text-right font-semibold text-primary" type="number" value="1000"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-secondary font-label-sm">บาท</span>
+</div>
+</div>
+<div class="space-y-xs">
+<label class="text-label-sm font-label-sm text-secondary uppercase">Description</label>
+<textarea class="w-full bg-white border border-outline-variant rounded-lg px-md py-sm font-body-md form-input-focus transition-all" placeholder="Package description for internal use..." rows="3"></textarea>
+</div>
+</div>
+</div>
+<!-- Summary Card -->
+<div class="bg-primary text-on-primary rounded-xl p-lg shadow-lg relative overflow-hidden group">
+<div class="relative z-10">
+<p class="text-label-sm font-label-sm opacity-80 mb-xs">PROJECTED TOTAL</p>
+<div class="flex items-baseline gap-sm">
+<span class="text-headline-xl font-headline-xl">1,000</span>
+<span class="text-body-md">THB</span>
+</div>
+<div class="mt-md pt-md border-t border-on-primary/20 flex justify-between items-center">
+<span class="text-body-md opacity-90">Total Coupons</span>
+<span class="text-headline-md font-headline-md">8</span>
+</div>
+</div>
+<div class="absolute -right-8 -bottom-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
+<span class="material-symbols-outlined text-[120px]">confirmation_number</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Child Patterns -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden flex flex-col h-full">
+<div class="p-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<div class="flex items-center gap-sm text-primary">
+<span class="material-symbols-outlined">account_tree</span>
+<h3 class="font-headline-md font-bold">Child Patterns</h3>
+</div>
+<button class="bg-primary text-on-primary px-md py-sm rounded-lg flex items-center gap-sm font-semibold hover:brightness-110 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">add</span>
+                                Add Pattern
+                            </button>
+</div>
+<div class="p-lg">
+<table class="w-full text-left border-separate border-spacing-y-sm">
+<thead>
+<tr class="text-label-sm font-label-sm text-secondary uppercase">
+<th class="px-md pb-base">Pattern</th>
+<th class="px-md pb-base text-right">Value (THB)</th>
+<th class="px-md pb-base text-center">Quantity</th>
+<th class="px-md pb-base text-right">Total</th>
+<th class="px-md pb-base text-center">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="bg-surface-container-low/50 hover:bg-surface-variant/20 transition-colors rounded-xl overflow-hidden">
+<td class="px-md py-md rounded-l-xl">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">local_activity</span>
+</div>
+<div>
+<p class="font-semibold text-primary">Pattern 1</p>
+<p class="text-label-sm font-label-sm opacity-60">High Value</p>
+</div>
+</div>
+</td>
+<td class="px-md py-md text-right font-semibold">1,000</td>
+<td class="px-md py-md text-center">1</td>
+<td class="px-md py-md text-right font-bold text-primary">1,000</td>
+<td class="px-md py-md text-center rounded-r-xl">
+<div class="flex justify-center gap-xs">
+<button class="p-xs text-secondary hover:text-primary hover:bg-primary-container/20 rounded transition-all">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-xs text-error/60 hover:text-error hover:bg-error-container/20 rounded transition-all">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-variant/20 transition-colors rounded-xl overflow-hidden">
+<td class="px-md py-md rounded-l-xl">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">local_activity</span>
+</div>
+<div>
+<p class="font-semibold text-primary">Pattern 2</p>
+<p class="text-label-sm font-label-sm opacity-60">Medium Value</p>
+</div>
+</div>
+</td>
+<td class="px-md py-md text-right font-semibold">500</td>
+<td class="px-md py-md text-center">2</td>
+<td class="px-md py-md text-right font-bold text-primary">1,000</td>
+<td class="px-md py-md text-center rounded-r-xl">
+<div class="flex justify-center gap-xs">
+<button class="p-xs text-secondary hover:text-primary hover:bg-primary-container/20 rounded transition-all">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-xs text-error/60 hover:text-error hover:bg-error-container/20 rounded transition-all">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="bg-surface-container-low/50 hover:bg-surface-variant/20 transition-colors rounded-xl overflow-hidden">
+<td class="px-md py-md rounded-l-xl">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">local_activity</span>
+</div>
+<div>
+<p class="font-semibold text-primary">Pattern 3</p>
+<p class="text-label-sm font-label-sm opacity-60">Micro Vouchers</p>
+</div>
+</div>
+</td>
+<td class="px-md py-md text-right font-semibold">
+<p>100</p>
+<p class="text-xs opacity-40">500</p>
+</td>
+<td class="px-md py-md text-center">
+<p>5</p>
+<p class="text-xs opacity-40">1</p>
+</td>
+<td class="px-md py-md text-right font-bold text-primary">
+<p>500</p>
+<p class="text-xs opacity-40">500</p>
+</td>
+<td class="px-md py-md text-center rounded-r-xl">
+<div class="flex justify-center gap-xs">
+<button class="p-xs text-secondary hover:text-primary hover:bg-primary-container/20 rounded transition-all">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-xs text-error/60 hover:text-error hover:bg-error-container/20 rounded transition-all">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-auto p-lg border-t border-outline-variant bg-surface-container-low flex justify-between items-center">
+<p class="font-body-md text-secondary font-semibold">Total Package Value Calculation</p>
+<div class="flex items-center gap-md">
+<span class="text-label-sm font-label-sm text-secondary uppercase">Sum Total:</span>
+<span class="text-headline-md font-headline-md text-primary">1,000 บาท</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Help Footer -->
+<div class="mt-xl flex items-start gap-md p-lg bg-surface-container rounded-xl border border-dashed border-outline">
+<span class="material-symbols-outlined text-primary">lightbulb</span>
+<div class="space-y-xs">
+<h4 class="font-semibold text-primary">Workflow Tip</h4>
+<p class="text-body-md text-on-surface-variant">The total value of all child patterns must equal the Parent Package total value. Any discrepancy will prevent the package from being published for assignment.</p>
+</div>
+</div>
+</div>
+<!-- Sticky Footer for Mobile (Hidden on Desktop) -->
+<div class="md:hidden">
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface/95 backdrop-blur-md border-t border-outline-variant shadow-lg z-50 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-secondary" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-sm font-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold" href="#">
+<span class="material-symbols-outlined">redeem</span>
+<span class="text-label-sm font-label-sm">My Packages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="text-label-sm font-label-sm">Selection</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary" href="#">
+<span class="material-symbols-outlined">local_activity</span>
+<span class="text-label-sm font-label-sm">Coupons</span>
+</a>
+</nav>
+</div>
+</main>
+<script>
+        // Micro-interaction for input fields
+        document.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('scale-[1.01]');
+                input.parentElement.classList.add('transition-all');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('scale-[1.01]');
+            });
+        });
+    </script>
+</body></html>
